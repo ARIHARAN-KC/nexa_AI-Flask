@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Account Settings | Nexa AI{% endblock %}
+
+{% block hero %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <!-- Sidebar -->
+        <div class="md:col-span-1">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                <div class="p-6 gradient-bg text-white text-center">
+                    <div class="w-24 h-24 mx-auto rounded-full bg-white flex items-center justify-center mb-4 overflow-hidden">
+                        {% if profile_pic_url %}
+                            <img src="{{ profile_pic_url }}" alt="Profile" class="w-full h-full object-cover">
+                        {% else %}
+                            <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        {% endif %}
+                    </div>
+                    <h2 class="text-xl font-bold">{{ current_user.username }}</h2>
+                    <p class="text-sm opacity-80">{{ current_user.email }}</p>
+                </div>
+                <div class="p-4">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="{{ url_for('profile') }}" class="block px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <i class="mr-2 fas fa-user-circle"></i> Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('account_settings') }}" class="block px-4 py-2 rounded-md bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-medium">
+                                <i class="mr-2 fas fa-cog"></i> Account Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('billing') }}" class="block px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <i class="mr-2 fas fa-credit-card"></i> Billing
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="block px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <i class="mr-2 fas fa-key"></i> API Keys
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('logout') }}" class="block px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400 transition-colors">
+                                <i class="mr-2 fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="md:col-span-3">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Account Settings</h2>
+                    <p class="text-gray-600 dark:text-gray-300">Manage your security and notification preferences</p>
+                </div>
+
+                <div class="p-6">
+                    <form method="POST" action="{{ url_for('account_settings') }}">
+                        {{ form.hidden_tag() }}
+
+                        <!-- Password Change -->
+                        <div class="mb-8">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Change Password</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="current_password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Current Password</label>
+                                    <input type="password" id="current_password" name="current_password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter current password" required>
+                                </div>
+                                <div class="md:col-span-2"></div> <!-- Spacer -->
+                                <div>
+                                    <label for="new_password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">New Password</label>
+                                    <input type="password" id="new_password" name="new_password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter new password" required>
+                                </div>
+                                <div>
+                                    <label for="confirm_password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Confirm New Password</label>
+                                    <input type="password" id="confirm_password" name="confirm_password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Confirm new password" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notification Preferences -->
+                        <div class="mb-8">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Notification Preferences</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center">
+                                    <input id="project_updates" name="project_updates" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                    <label for="project_updates" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Email notifications for project updates</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input id="security_alerts" name="security_alerts" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" checked>
+                                    <label for="security_alerts" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Email notifications for security alerts</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Two-Factor Authentication -->
+                        <div class="mb-8">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Two-Factor Authentication</h3>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-300">Two-Factor Authentication</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Add an extra layer of security to your account</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="two_factor" name="two_factor" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" class="px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-red-200 dark:border-red-900/50">
+                <div class="p-6 border-b border-red-200 dark:border-red-900/50">
+                    <h2 class="text-xl font-bold text-red-600 dark:text-red-400">Danger Zone</h2>
+                    <p class="text-gray-600 dark:text-gray-300">These actions are irreversible. Proceed with caution.</p>
+                </div>
+                <div class="p-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div class="mb-4檢
+                        <h3 class="font-medium text-gray-900 dark:text-white">Delete Account</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Once you delete your account, there is no going back.</p>
+                    </div>
+                    <button type="button" data-modal-target="deleteModal" data-modal-toggle="deleteModal" class="px-5 py-2.5 text-sm font-medium text-white bg-red-700 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                        Delete Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div id="deleteModal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <button type="button" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="deleteModal">
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                </svg>
+                <span class="sr-only">Close modal</span>
+            </button>
+            <div class="p-4 md:p-5 text-center">
+                <svg class="mx-auto mb-4 text-red-600 w-12 h-12 dark:text-red-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                </svg>
+                <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete your account?</h3>
+                <form method="POST" action="{{ url_for('delete_account') }}">
+                    <button type="submit" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center me-2">
+                        Yes, I'm sure
+                    </button>
+                    <button type="button" data-modal-hide="deleteModal" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">No, cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Modal functionality
+    const deleteModal = document.getElementById('deleteModal');
+    if (deleteModal) {
+        const modalButtons = document.querySelectorAll('[data-modal-target="deleteModal"], [data-modal-hide="deleteModal"]');
+        modalButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                deleteModal.classList.toggle('hidden');
+            });
+        });
+    }
+</script>
+{% endblock %}

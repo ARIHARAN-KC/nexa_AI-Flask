@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Nexa AI | Configure API Key{% endblock %}
+
+{% block hero %}
+<!-- Hero Section for API Key Configuration -->
+<div class="hero-gradient text-white">
+    <div class="max-w-7xl mx-auto px-4 py-24 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6">Configure Your API Key</h1>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">
+                Set up your AI model and API key to start building projects with Nexa AI's intelligent coding assistant.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- API Key Configuration Form -->
+<section class="py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-lg mx-auto bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">API Key Settings</h2>
+        <form method="POST" action="{{ url_for('configure') }}">
+            {{ form.hidden_tag() }}
+            
+            <!-- AI Model Selection -->
+            <div class="mb-6">
+                <label for="{{ form.model.id }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    AI Model
+                </label>
+                {{ form.model(class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white") }}
+                {% if form.model.errors %}
+                    {% for error in form.model.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <!-- API Key Input -->
+            <div class="mb-6">
+                <label for="{{ form.api_key.id }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    API Key
+                </label>
+                {{ form.api_key(class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white", placeholder="Enter your API key") }}
+                {% if form.api_key.errors %}
+                    {% for error in form.api_key.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <!-- Project Name Input -->
+            <div class="mb-6">
+                <label for="{{ form.project_name.id }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Project Name
+                </label>
+                {{ form.project_name(class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white", placeholder="My Awesome Project") }}
+                {% if form.project_name.errors %}
+                    {% for error in form.project_name.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="text-center">
+                {{ form.submit(class="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200") }}
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

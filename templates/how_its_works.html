@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Nexa AI | How It Works{% endblock %}
+
+{% block hero %}{% endblock %}  <!-- Override to remove hero section -->
+
+{% block content %}
+<section class="py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">How Nexa AI Works</h1>
+            <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                From concept to implementation - our AI Software Engineer assistant guides you through every step
+            </p>
+        </div>
+
+        <!-- Process Steps -->
+        <div class="space-y-20">
+            <!-- Step 1 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="order-2 md:order-1">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mr-4">1</div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Describe Your Project</h2>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Start by explaining what you want to build in plain English. Provide as much detail as you can about features, requirements, and your preferred technologies.
+                    </p>
+                    <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                        <p class="font-medium text-gray-800 dark:text-gray-200">Example input:</p>
+                        <p class="text-gray-600 dark:text-gray-300 italic">"Build a React e-commerce site with product listings, shopping cart, and Stripe checkout. It should have user authentication and a dashboard for order management."</p>
+                    </div>
+                </div>
+                <div class="order-1 md:order-2">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                        <img src="https://cdn-icons-png.flaticon.com/512/4341/4341139.png" alt="Describe project" class="w-full h-auto max-h-64 object-contain">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mr-4">2</div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">AI Research & Planning</h2>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Our system analyzes your requirements and proposes the optimal architecture, technology stack, and development approach.
+                    </p>
+                    <ul class="space-y-3 text-gray-600 dark:text-gray-300">
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>Technology recommendations based on your requirements</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>Project structure and architecture diagram</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>Development roadmap with milestones</span>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                        <div class="code-block">
+                            <span class="text-green-400"># Project Architecture</span><br>
+                            <span class="text-purple-400">Frontend</span>: React.js, TailwindCSS<br>
+                            <span class="text-purple-400">Backend</span>: Node.js, Express<br>
+                            <span class="text-purple-400">Database</span>: MongoDB<br>
+                            <span class="text-purple-400">Authentication</span>: JWT<br>
+                            <span class="text-purple-400">Payment</span>: Stripe API<br><br>
+                            <span class="text-green-400"># Key Components</span><br>
+                            <span class="text-blue-300">- Product listing page</span><br>
+                            <span class="text-blue-300">- Shopping cart system</span><br>
+                            <span class="text-blue-300">- Checkout flow</span><br>
+                            <span class="text-blue-300">- User dashboard</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="order-2 md:order-1">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mr-4">3</div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Code Generation</h2>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Our multi-model AI system generates production-ready code with documentation, tests, and deployment configurations.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 dark:bg-blue-900 p-2 rounded-lg mr-4">
+                                <svg class="w-6 h-6 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-900 dark:text-white">Multiple AI Models</h3>
+                                <p class="text-gray-600 dark:text-gray-300">We leverage Gemini, Cohere, ChatGPT, and DeepSeek for optimal results</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 dark:bg-blue-900 p-2 rounded-lg mr-4">
+                                <svg class="w-6 h-6 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-900 dark:text-white">Quality Assurance</h3>
+                                <p class="text-gray-600 dark:text-gray-300">Generated code includes tests, error handling, and follows best practices</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-1 md:order-2">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                        <div class="code-block">
+                            <span class="text-green-400"># Generated React component</span><br>
+                            <span class="text-purple-400">import</span> React <span class="text-purple-400">from</span> <span class="text-orange-300">'react'</span>;<br>
+                            <span class="text-purple-400">import</span> { ShoppingCart } <span class="text-purple-400">from</span> <span class="text-orange-300">'../context/CartContext'</span>;<br><br>
+                            <span class="text-purple-400">const</span> <span class="text-yellow-300">ProductCard</span> = ({ product }) => {<br>
+                            &nbsp;&nbsp;<span class="text-purple-400">const</span> { addToCart } = <span class="text-blue-300">ShoppingCart</span>();<br><br>
+                            &nbsp;&nbsp;<span class="text-purple-400">return</span> (<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">&lt;div className="border rounded-lg p-4"&gt;</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">&lt;img src={product.image} /&gt;</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">&lt;h3&gt;{product.name}&lt;/h3&gt;</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">&lt;button onClick={() => addToCart(product)}&gt;</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Add to Cart<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">&lt;/button&gt;</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">&lt;/div&gt;</span><br>
+                            &nbsp;&nbsp;);<br>
+                            };
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mr-4">4</div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Review & Refine</h2>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Collaborate with the AI to refine your project. Ask questions, request changes, or get explanations for any part of the code.
+                    </p>
+                    <div class="bg souvenirs-gray-50 dark:bg-gray-700 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
+                        <div class="flex mb-4">
+                            <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">AI</div>
+                            <div class="bg-white dark:bg-gray-600 p-3 rounded-lg shadow-sm max-w-3xl">
+                                <p class="text-gray-800 dark:text-gray-200">I've generated the shopping cart component. Would you like me to:</p>
+                                <ul class="list-disc pl-5 mt-2 text-gray-700 dark:text-gray-300">
+                                    <li>Add quantity controls?</li>
+                                    <li>Implement local storage persistence?</li>
+                                    <li>Add a checkout button that links to Stripe?</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <div class="bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">Y</div>
+                            <div class="bg-white dark:bg-gray-600 p-3 rounded-lg shadow-sm max-w-3xl">
+                                <p class="text-gray-800 dark:text-gray-200">Yes, please add quantity controls and link to Stripe. Also, can you explain how the cart state is managed?</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" alt="Collaborate with AI" class="w-full h-auto max-h-64 object-contain">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="mt-24 text-center">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Ready to experience AI-powered development?</h2>
+            <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+                Join thousands of developers who are building better software faster with Nexa AI.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="{{ url_for('register') }}" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                    Get Started for Free
+                </a>
+                <a href="{{ url_for('features') }}" class="px-6 py-3 border border-gray-300 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                    Explore Features
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

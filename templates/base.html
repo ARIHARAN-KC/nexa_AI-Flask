@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Nexa AI | AI Pair Programming Assistant{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #4F46E5, #9333EA);
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(79,70,229,0.95) 0%, rgba(147,51,234,0.95) 100%);
+        }
+        .container {
+            flex: 1;
+        }
+        .nav-link {
+            position: relative;
+            padding-bottom: 2px;
+        }
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: white;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover:after {
+            width: 100%;
+        }
+        .code-block {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        /* Dropdown styles */
+        #account-menu {
+            transition: all 0.2s ease-out;
+            transform-origin: top right;
+            transform: scale(0);
+            opacity: 0;
+            visibility: hidden;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            min-width: 10rem;
+        }
+        
+        #account-menu.show {
+            transform: scale(1);
+            opacity: 1;
+            visibility: visible;
+        }
+        /* Notification styles */
+        .notification {
+            transition: opacity 0.5s ease-out;
+        }
+        .notification.fade-out {
+            opacity: 0;
+        }
+        
+        /* Theme transition */
+        .transition-colors {
+            transition-property: background-color, border-color, color, fill, stroke;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 300ms;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    transitionProperty: {
+                        'colors': 'background-color, border-color, color, fill, stroke',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-200">
+
+    <!-- Navigation Bar -->
+    <nav class="gradient-bg text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="{{ url_for('index') }}" class="text-xl font-bold tracking-tight flex items-center" aria-label="Nexa AI Home">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Nexa AI 
+            </a>
+            
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="{{ url_for('index') }}" class="nav-link text-white hover:text-gray-200" aria-label="Home">Home</a>
+                <a href="{{ url_for('features') }}" class="nav-link text-white hover:text-gray-200" aria-label="Features">Features</a>
+                <a href="{{ url_for('how_its_works') }}" class="nav-link text-white hover:text-gray-200" aria-label="How It Works">How It Works</a>
+                <a href="{{ url_for('integrations') }}" class="nav-link text-white hover:text-gray-200" aria-label="AI Integrations">AI Integrations</a>
+                <a href="{{ url_for('examples') }}" class="nav-link text-white hover:text-gray-200" aria-label="Examples">Examples</a>
+                <a href="{{ url_for('contact') }}" class="nav-link text-white hover:text-gray-200" aria-label="Contact">Contact</a>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" type="button" class="text-white hover:text-gray-200 focus:outline-none" aria-label="Toggle Dark Mode">
+                    <svg id="theme-toggle-dark-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="theme-toggle-light-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+
+                {% if current_user.is_authenticated %}
+                    <div class="ml-4 relative">
+                        <button id="account-btn" type="button" class="flex items-center space-x-1 text-white focus:outline-none hover:text-gray-200 transition-colors" aria-label="Account Menu">
+                            <span>Account</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="account-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 text-left dark:bg-gray-700">
+                            <a href="{{ url_for('workspace') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600" aria-label="Workspace">Workspace</a>
+                            <a href="{{ url_for('history') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600" aria-label="History">History</a>
+                            <a href="{{ url_for('profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600" aria-label="Profile">Profile</a>
+                            <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600" aria-label="Logout">Logout</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="ml-4 flex space-x-4">
+                        <a href="{{ url_for('login') }}" class="px-4 py-2 border border-white rounded-md hover:bg-white hover:text-blue-600 transition-colors duration-200" aria-label="Login">Login</a>
+                        <a href="{{ url_for('register') }}" class="px-4 py-2 bg-white text-blue-600 rounded-md hover:bg-gray-100 transition-colors duration-200" aria-label="Get Started">Get Started</a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="menu-btn" type="button" class="md:hidden text-white focus:outline-none" aria-label="Toggle Mobile Menu">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-indigo-800">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{{ url_for('index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-indigo-700" aria-label="Home">Home</a>
+                <a href="#features" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-indigo-700" aria-label="Features">Features</a>
+                <a href="#how-it-works" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-indigo-700" aria-label="How It Works">How It Works</a>
+                <a href="#integrations" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-indigo-700" aria-label="AI Integrations">AI Integrations</a>
+                <a href="#examples" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-indigo-700" aria-label="Examples">Examples</a>
+                <a href="{{ url_for('contact') }}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-indigo-700" aria-label="Contact">Contact</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('workspace') }}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-indigo-700" aria-label="Workspace">Workspace</a>
+                    <a href="{{ url_for('logout') }}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-indigo-700" aria-label="Logout">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-indigo-700" aria-label="Login">Login</a>
+                    <a href="{{ url_for('register') }}" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-indigo-700" aria-label="Get Started">Get Started</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto pt-16">
+        <!-- Notifications -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="px-4 py-4" id="notification-container">
+                    {% for category, message in messages %}
+                        <div class="mb-4 p-4 rounded-md bg-{{ category }}-100 text-{{ category }}-800 notification dark:bg-{{ category }}-900 dark:text-{{ category }}-200" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block hero %}
+        <!-- Hero Section -->
+        <div class="hero-gradient text-white">
+            <div class="max-w-7xl mx-auto px-4 py-24 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6">Your Autonomous AI Software Engineer
+                        </h1>
+                        <p class="text-xl mb-8">Transform high-level instructions into complete software projects with our multi-model AI coding Engineer.</p>
+                        <div class="flex space-x-4">
+                            {% if current_user.is_authenticated %}
+                                <a href="{{ url_for('workspace') }}" class="px-6 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200" aria-label="Go to Workspace">Go to Workspace</a>
+                            {% else %}
+                                <a href="{{ url_for('register') }}" class="px-6 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200" aria-label="Start Coding Now">Start Coding Now</a>
+                            {% endif %}
+                            <a href="#demo" class="px-6 py-3 border border-white text-white font-medium rounded-lg hover:bg-white hover:text-blue-600 transition-colors duration-200" aria-label="Live Demo">Live Demo</a>
+                        </div>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="code-block">
+                            <span class="text-green-400"># Nexa-AI generated code</span><br>
+                            <span class="text-purple-400">def</span> <span class="text-yellow-300">create_web_app</span>(requirements):<br>
+                              <span class="text-purple-400">"""</span>Generate a web app based on requirements<span class="text-purple-400">"""</span><br>
+                              app = Flask(__name__)<br>
+                              <span class="text-purple-400">for</span> route, func <span class="text-purple-400">in</span> requirements.items():<br>
+                                app.route(route)(func)<br>
+                              <span class="text-purple-400">return</span> app<br><br>
+                            <span class="text-gray-500"># AI will generate tests, docs & deployment</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+
+        {% block content %}
+        <!-- Features Section -->
+        <section id="features" class="py-16 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Powerful AI Coding Features</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">From concept to deployment with intelligent assistance at every step</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                    <div class="text-blue-600 mb-4">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Project Generation</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Turn natural language descriptions into complete, structured projects with proper architecture and dependencies.</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                    <div class="text-blue-600 mb-4">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Multi-Model Intelligence</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Leverage multiple AI models for optimal code generation and problem solving.</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                    <div class="text-blue-600 mb-4">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Structured Workspace</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Organized environment for planning, research, coding, and project management all in one place.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section id="how-it-works" class="py-16 bg-gray-50 dark:bg-gray-800 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">How Nexa AI Works</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">From idea to implementation in four simple steps</p>
+            </div>
+            <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="bg-white dark:bg-gray-700 w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl font-bold text-blue-600 mb-4">1</div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Describe Your Project</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Provide high-level instructions in plain English about what you want to build.</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-white dark:bg-gray-700 w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl font-bold text-blue-600 mb-4">2</div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">AI Research & Planning</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Our system analyzes requirements and proposes the best architecture and technologies.</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-white dark:bg-gray-700 w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl font-bold text-blue-600 mb-4">3</div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Code Generation</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Multiple AI models collaborate to generate production-ready code with documentation.</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-white dark:bg-gray-700 w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl font-bold text-blue-600 mb-4">4</div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Review & Refine</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Iterate with AI assistance to refine and improve your project.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Integrations Section -->
+        <section id="integrations" class="py-16 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Integrated AI Models</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">Harnessing the best AI models for optimal results</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col items-center">
+                    <img src="https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg" 
+                         alt="Gemini Pro" 
+                         class="w-20 h-20 mb-4 rounded-full object-contain">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Gemini Pro</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-center">Advanced reasoning and problem-solving capabilities</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col items-center">
+                    <img src="https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/cohere.png" 
+                         alt="Cohere" 
+                         class="w-20 h-20 mb-4 rounded-full object-contain">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Cohere</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-center">Natural language understanding and generation</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col items-center">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/1024px-ChatGPT_logo.svg.png" 
+                         alt="ChatGPT" 
+                         class="w-20 h-20 mb-4 rounded-full object-contain">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white">ChatGPT</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-center">Creative coding and conversational interface</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col items-center">
+                    <img src="https://miro.medium.com/v2/resize:fit:717/1*tlUlwc-ABsXvhFjK3JpC9g.png" 
+                         alt="DeepSeek" 
+                         class="w-20 h-20 mb-4 rounded-full object-contain">
+                    <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white">DeepSeek</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-center">Specialized for complex technical implementations</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example Projects Section -->
+        <section id="examples" class="py-16 bg-gray-50 dark:bg-gray-800 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Example Projects</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">See what you can build with Nexa AI</p>
+            </div>
+            <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">E-commerce Website</h3>
+                    <div class="code-block mb-4 text-sm">
+                        <span class="text-green-400"># User instruction:</span><br>
+                        <span class="text-gray-300">"Build a React e-commerce site with product listings, cart, and checkout"</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">Nexa AI generated a complete React application with Redux state management, Stripe integration, and responsive design.</p>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Data Analysis Tool</h3>
+                    <div class="code-block mb-4 text-sm">
+                        <span class="text-green-400"># User instruction:</span><br>
+                        <span class="text-gray-300">"Create a Python tool to analyze CSV data with visualizations"</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">Generated a Jupyter notebook with Pandas for data processing and Matplotlib/Seaborn for visualizations.</p>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">REST API Service</h3>
+                    <div class="code-block mb-4 text-sm">
+                        <span class="text-green-400"># User instruction:</span><br>
+                        <span class="text-gray-300">"Node.js API for user authentication with JWT"</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">Produced a complete Express.js backend with MongoDB, JWT auth, and Swagger documentation.</p>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Mobile App</h3>
+                    <div class="code-block mb-4 text-sm">
+                        <span class="text-green-400"># User instruction:</span><br>
+                        <span class="text-gray-300">"Flutter app to track daily habits with reminders"</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">Created a cross-platform Flutter app with Firebase backend and local notifications.</p>
+                </div>
+            </div>
+        </section>
+        {% endblock %}
+    </main>
+
+    {% block footer %}
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12 mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <svg class="w-8 h-8 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span class="text-xl font-bold text-white">Nexa AI</span>
+                    </div>
+                    <p class="text-sm">The intelligent Autonomous AI Software Engineer assistant that helps you build better software, faster.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Facebook">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Twitter">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Instagram">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.597 0-2.917-.01-3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="LinkedIn">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-white font-semibold text-lg mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{{ url_for('index') }}" class="hover:text-white transition-colors" aria-label="Home">Home</a></li>
+                        <li><a href="{{ url_for('features') }}" class="hover:text-white transition-colors" aria-label="Features">Features</a></li>
+                        <li><a href="{{ url_for('how_its_works') }}" class="hover:text-white transition-colors" aria-label="How It Works">How It Works</a></li>
+                        <li><a href="{{ url_for('integrations') }}" class="hover:text-white transition-colors" aria-label="AI Integrations">AI Integrations</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-white font-semibold text-lg mb-4">Resources</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{{ url_for('documentation') }}" class="hover:text-white transition-colors" aria-label="Documentation">Documentation</a></li>
+                        <li><a href="{{ url_for('tutorials') }}" class="hover:text-white transition-colors" aria-label="Tutorials">Tutorials</a></li>
+                        <li><a href="{{ url_for('blog') }}" class="hover:text-white transition-colors" aria-label="Blog">Blog</a></li>
+                        <li><a href="{{ url_for('community') }}" class="hover:text-white transition-colors" aria-label="Community">Community</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-white font-semibold text-lg mb-4">Contact Us</h3>
+                    <address class="not-italic">
+                        <p class="mb-2">Askar Garden</p>
+                        <p class="mb-2">Karur, TamilNadu</p>
+                        <p class="mb-2">India</p>
+                        <p class="mb-4">Phone: +91 9865329242</p>
+                        <a href="mailto:kovyzentech@gmail.com" class="text-blue-400 hover:text-blue-300" aria-label="Email Support">kovyzentech@gmail.com</a>
+                    </address>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 my-8"></div>
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm mb-4 md:mb-0">© 2025 Nexa AI (Kovyzen TECH). All rights reserved.</p>
+                <div class="flex space-x-6">
+                    <a href="{{ url_for('privacy_policy') }}" class="text-sm hover:text-white transition-colors" aria-label="Privacy Policy">Privacy Policy</a>
+                    <a href="{{ url_for('terms_of_service') }}" class="text-sm hover:text-white transition-colors" aria-label="Terms of Service">Terms of Service</a>
+                    <a href="{{ url_for('cookie_policy') }}" class="text-sm hover:text-white transition-colors" aria-label="Cookie Policy">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+    
+    <!-- JavaScript -->
+    <script>
+        // Mobile menu toggle
+        const menuBtn = document.getElementById("menu-btn");
+        const mobileMenu = document.getElementById("mobile-menu");
+        if (menuBtn && mobileMenu) {
+            menuBtn.addEventListener("click", function() {
+                mobileMenu.classList.toggle("hidden");
+            });
+        }
+
+        // Account dropdown functionality
+        const accountBtn = document.getElementById("account-btn");
+        const accountMenu = document.getElementById("account-menu");
+        if (accountBtn && accountMenu) {
+            accountBtn.addEventListener("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                accountMenu.classList.toggle("show");
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener("click", function(event) {
+                if (!accountBtn.contains(event.target) && !accountMenu.contains(event.target)) {
+                    accountMenu.classList.remove("show");
+                }
+            });
+
+            // Close dropdown when pressing Escape key
+            document.addEventListener("keydown", function(event) {
+                if (event.key === "Escape" && accountMenu.classList.contains("show")) {
+                    accountMenu.classList.remove("show");
+                }
+            });
+        }
+
+        // Auto-disappear notifications after 3 seconds
+        document.addEventListener("DOMContentLoaded", function() {
+            const notifications = document.querySelectorAll(".notification");
+            if (notifications.length > 0) {
+                notifications.forEach(function(notification) {
+                    setTimeout(function() {
+                        notification.classList.add("fade-out");
+                        // Remove the notification from DOM after fade-out animation
+                        setTimeout(function() {
+                            notification.remove();
+                        }, 500); // Matches the CSS transition duration
+                    }, 3000); // 3 seconds delay before starting fade-out
+                });
+            }
+        });
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+        // Check for saved theme preference or use system preference
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            themeToggleLightIcon.classList.remove('hidden');
+            themeToggleDarkIcon.classList.add('hidden');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeToggleDarkIcon.classList.remove('hidden');
+            themeToggleLightIcon.classList.add('hidden');
+        }
+
+        themeToggle.addEventListener('click', function() {
+            // Toggle icons
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+            
+            // If dark mode is currently active
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+        });
+    </script>
+</body>
+</html>

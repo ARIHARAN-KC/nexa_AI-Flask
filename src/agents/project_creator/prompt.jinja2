@@ -1,0 +1,91 @@
+```
+Create a project named {{ project_name }} with the following files:
+{% for file in full_code %}
+- {{ file.file }}:
+  ```{{ file.file.split('.')[-1] }}
+  {{ file.code }}
+```
+
+{% endfor %}
+
+Instructions:
+
+- Validate and finalize the project structure.
+- Ensure all file paths use forward slashes (/) for directories (e.g., 'server/models/User.js', not 'servermodelsUser.js' or 'server\\models\\User.js').
+- Maintain the provided directory structure (e.g., 'server/models/', 'client/src/components/').
+- Avoid flattened or concatenated paths.
+- Output in JSON format: { "reply": "Description of the project structure and any changes made", "code": \[ { "file": "path/to/file.js", "code": "file content here" }, ... \] }
+
+```
+```
+
+The code will be in the following format:
+~~~
+files = [
+    {
+        "file": "<file name>",
+        "code": "<file content>"
+    },
+    {
+        "file": "<file name>",
+        "code": "<file content>"
+    }
+]
+~~~
+
+Your task is to generate a Python code to create a project folder named with {{ project_name }} and start creating associated folders and files of the code provided to you earlier inside this folder. 
+
+When providing file paths in your response, ALWAYS use forward slashes (/) for directory separation. For example:
+
+Correct:
+templates/login.html
+static/css/style.css
+
+Incorrect:
+templates\login.html
+static\\css\\style.css
+
+Your response should be in the following format:
+{
+    "code": "<Provide only the python code for generating project folder/s files correctly>",
+    "reply": "<Inform what was done in a human-like response, include the project's directory tree graph in markdown format>"
+}
+
+Rules:
+1. Never create or define the `files` variable - it already exists
+2. Only reference the code as "The code I wrote", never address the user directly
+3. The code must work on first try without errors
+4. Use proper os module methods for path handling
+5. Only create files present in the `files` variable
+6. Directory tree goes in the `reply` section
+7. Never include phrases like "as per your request"
+
+Now create the project structure for: {{ project_name }}
+
+Example correct response:
+```json
+{
+    "code": "import os\n\ndef create_project_structure(project_name, files):\n    try:\n        os.makedirs(project_name, exist_ok=True)\n        for file in files:\n            path = os.path.join(project_name, file['file'])\n            os.makedirs(os.path.dirname(path), exist_ok=True)\n            with open(path, 'w') as f:\n                f.write(file['code'])\n        return True\n    except Exception as e:\n        print(f\"Error creating project: {e}\")\n        return False\n\ncreate_project_structure('{{ project_name }}', files)",
+    "reply": "Created project structure for {{ project_name }} with the following files:\n\n```\n{{ project_name }}/\n├── templates/\n│   └── login.html\n├── static/\n│   └── css/style.css\n└── app.py\n```\n\nAll files were created with proper directory structure."
+}
+
+Key improvements in this version:
+
+1. Integrated your path separator instructions clearly at the top
+2. Maintained all the original rules and requirements
+3. Added a complete example response showing exactly the expected format
+4. Kept the focus on technical implementation rather than user interaction
+5. Ensured the prompt will generate code that:
+   - Creates proper folder structure
+   - Handles paths correctly
+   - Only works with the provided files
+   - Includes proper error handling
+
+The prompt now clearly communicates:
+- How paths should be formatted
+- What the output format should be
+- All constraints and requirements
+- Examples of correct and incorrect paths
+- The exact JSON structure expected in the response
+
+This should result in properly structured project files with correct path handling.

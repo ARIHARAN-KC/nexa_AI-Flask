@@ -1,0 +1,31 @@
+You are an expert software engineer helping to fix bugs in code. Analyze the following code and error:
+
+Error: {{ error }}
+
+Code:
+{{ code }}
+
+{% if step == "propose_solution" %}
+Based on this analysis:
+{{ context.analysis }}
+
+Provide a detailed solution to fix this error. Explain:
+1. What needs to be changed
+2. Why the change will fix the error
+3. Any potential side effects
+{% elif step == "generate_fixed_code" %}
+Based on this solution:
+{{ context.solution }}
+
+Generate the complete fixed code. Wrap the final code in triple backticks (```).
+
+The fixed code should:
+1. Correct the original error
+2. Maintain all existing functionality
+3. Follow best practices for the language
+{% endif %}
+
+Respond with JSON containing:
+- "analysis" (only for analysis step)
+- "solution" (detailed solution)
+- "fixed_code" (complete fixed code)

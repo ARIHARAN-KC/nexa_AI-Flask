@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Nexa AI | Privacy Policy{% endblock %}
+
+{% block hero %}{% endblock %}  <!-- Override to remove hero section -->
+
+{% block content %}
+<section class="py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Privacy Policy</h1>
+            <p class="text-xl text-gray-600 dark:text-gray-300">
+                Last Updated: March 31, 2025
+            </p>
+        </div>
+
+        <!-- Policy Content -->
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">1. Introduction</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                Welcome to Nexa AI ("we", "us", or "our"). We are committed to protecting your privacy and ensuring that your personal information is handled responsibly. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our services, including our website and AI Software Engineer assistant.
+            </p>
+
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">2. Information We Collect</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                We may collect the following types of information:
+            </p>
+            <ul class="list-disc pl-6 text-gray-600 dark:text-gray-300 mb-6 space-y-2">
+                <li><strong>Personal Information:</strong> Name, email address, and other contact details you provide during registration or support requests.</li>
+                <li><strong>Usage Data:</strong> Information about how you interact with our services, such as IP address, browser type, and pages visited.</li>
+                <li><strong>Project Data:</strong> Code, project descriptions, and other content you input into our platform for processing.</li>
+            </ul>
+
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">3. How We Use Your Information</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                We use your information to:
+            </p>
+            <ul class="list-disc pl-6 text-gray-600 dark:text-gray-300 mb-6 space-y-2">
+                <li>Provide and improve our services.</li>
+                <li>Personalize your experience and deliver tailored content.</li>
+                <li>Communicate with you, including responding to inquiries and sending updates.</li>
+                <li>Ensure the security and integrity of our platform.</li>
+            </ul>
+
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">4. Sharing Your Information</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                We do not sell your personal information. We may share your information with third parties only in the following cases:
+            </p>
+            <ul class="list-disc pl-6 text-gray-600 dark:text-gray-300 mb-6 space-y-2">
+                <li>With service providers who assist us in operating our platform (e.g., hosting, analytics).</li>
+                <li>To comply with legal obligations or protect our rights.</li>
+                <li>With your consent, such as when integrating with third-party tools you authorize.</li>
+            </ul>
+
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">5. Your Rights</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                Depending on your location, you may have rights to access, correct, delete, or restrict the processing of your personal information. To exercise these rights, please contact us at <a href="mailto:support@nexaai.com" class="text-blue-600 dark:text-blue-400 hover:underline">support@nexaai.com</a>.
+            </p>
+
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">6. Contact Us</h2>
+            <p class="text-gray-600 dark:text-gray-300">
+                If you have questions about this Privacy Policy, please reach out to us:
+            </p>
+            <address class="not-italic text-gray-600 dark:text-gray-300 mt-4">
+                Nexa AI<br>
+                Askar Garden<br>
+                Karur, Tamil Nadu, India<br>
+                Email: <a href="mailto:support@nexaai.com" class="text-blue-600 dark:text-blue-400 hover:underline">support@nexaai.com</a><br>
+                Phone: +91 9865329242
+            </address>
+        </div>
+
+        <!-- Back to Home -->
+        <div class="text-center mt-12">
+            <a href="{{ url_for('index') }}" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                Back to Home
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

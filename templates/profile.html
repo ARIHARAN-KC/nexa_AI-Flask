@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Profile | Nexa AI{% endblock %}
+
+{% block hero %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <!-- Sidebar -->
+        <div class="md:col-span-1">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                <div class="p-6 gradient-bg text-white text-center">
+                    <div class="w-24 h-24 mx-auto rounded-full bg-white flex items-center justify-center mb-4 overflow-hidden">
+                        {% if profile_pic_url %}
+                            <img src="{{ profile_pic_url }}" alt="Profile" class="w-full h-full object-cover">
+                        {% else %}
+                            <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        {% endif %}
+                    </div>
+                    <h2 class="text-xl font-bold">{{ current_user.username }}</h2>
+                    <p class="text-sm opacity-80">{{ current_user.email }}</p>
+                </div>
+                <div class="p-4">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="{{ url_for('profile') }}" class="block px-4 py-2 rounded-md bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-medium">
+                                <i class="mr-2 fas fa-user-circle"></i> Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('account_settings') }}" class="block px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <i class="mr-2 fas fa-cog"></i> Account Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('billing') }}" class="block px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <i class="mr-2 fas fa-credit-card"></i> Billing
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('api_key_form') }}" class="block px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <i class="mr-2 fas fa-key"></i> API Keys
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('logout') }}" class="block px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400 transition-colors">
+                                <i class="mr-2 fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="md:col-span-3">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Profile Information</h2>
+                    <p class="text-gray-600 dark:text-gray-300">Manage your personal information and account settings</p>
+                </div>
+
+                <div class="p-6">
+                    <form method="POST" action="{{ url_for('profile') }}" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <!-- Profile Picture -->
+                            <div class="md:col-span-2">
+                                <div class="flex items-center space-x-6">
+                                    <div class="shrink-0">
+                                        <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600">
+                                            {% if profile_pic_url %}
+                                                <img id="previewImg" src="{{ profile_pic_url }}" alt="Profile" class="w-full h-full object-cover">
+                                            {% else %}
+                                                <div id="previewImg" class="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                                    <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                                    </svg>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300" for="profile_picture">Profile picture</label>
+                                        <div class="flex items-center space-x-4">
+                                            <input type="file" name="profile_picture" id="profile_picture" class="hidden" accept="image/*">
+                                            <button type="button" onclick="document.getElementById('profile_picture').click()" class="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors">
+                                                Upload
+                                            </button>
+                                            {% if profile_pic_url %}
+                                                <button type="button" id="removePicture" class="px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors">
+                                                    Remove
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">JPG, GIF or PNG. Max size 2MB</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Username -->
+                            <div>
+                                <label for="username" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Username</label>
+                                {{ form.username(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500", placeholder="Your username") }}
+                                {% for error in form.username.errors %}
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Email -->
+                            <div>
+                                <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Email address</label>
+                                {{ form.email(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500", placeholder="Your email") }}
+                                {% for error in form.email.errors %}
+                                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+
+                            <!-- First Name -->
+                            <div>
+                                <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">First name</label>
+                                {{ form.first_name(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500", placeholder="Your first name") }}
+                            </div>
+
+                            <!-- Last Name -->
+                            <div>
+                                <label for="last_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Last name</label>
+                                {{ form.last_name(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500", placeholder="Your last name") }}
+                            </div>
+
+                            <!-- Bio -->
+                            <div class="md:col-span-2">
+                                <label for="bio" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Bio</label>
+                                {{ form.bio(class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500", rows="3", placeholder="Tell us about yourself") }}
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" class="px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-red-200 dark:border-red-900/50">
+                <div class="p-6 border-b border-red-200 dark:border-red-900/50">
+                    <h2 class="text-xl font-bold text-red-600 dark:text-red-400">Danger Zone</h2>
+                    <p class="text-gray-600 dark:text-gray-300">These actions are irreversible. Proceed with caution.</p>
+                </div>
+                <div class="p-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div class="mb-4 md:mb-0">
+                            <h3 class="font-medium text-gray-900 dark:text-white">Delete Account</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">Once you delete your account, there is no going back.</p>
+                        </div>
+                        <button type="button" data-modal-target="deleteModal" data-modal-toggle="deleteModal" class="px-5 py-2.5 text-sm font-medium text-white bg-red-700 rounded-lg hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                            Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div id="deleteModal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <button type="button" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="deleteModal">
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                </svg>
+                <span class="sr-only">Close modal</span>
+            </button>
+            <div class="p-4 md:p-5 text-center">
+                <svg class="mx-auto mb-4 text-red-600 w-12 h-12 dark:text-red-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                </svg>
+                <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete your account?</h3>
+                <form method="POST" action="{{ url_for('delete_account') }}">
+                    <button type="submit" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center me-2">
+                        Yes, I'm sure
+                    </button>
+                    <button type="button" data-modal-hide="deleteModal" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">No, cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Profile picture preview
+    document.getElementById('profile_picture').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const preview = document.getElementById('previewImg');
+                if (preview.tagName === 'IMG') {
+                    preview.src = event.target.result;
+                } else {
+                    const img = document.createElement('img');
+                    img.id = 'previewImg';
+                    img.src = event.target.result;
+                    img.className = 'w-full h-full object-cover';
+                    preview.parentNode.replaceChild(img, preview);
+                    
+                    // Show remove button if it exists
+                    const removeBtn = document.getElementById('removePicture');
+                    if (removeBtn) removeBtn.style.display = 'inline-flex';
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Remove profile picture
+    const removeBtn = document.getElementById('removePicture');
+    if (removeBtn) {
+        removeBtn.addEventListener('click', function() {
+            document.getElementById('previewImg').src = '';
+            document.getElementById('profile_picture').value = '';
+            
+            // Replace with default avatar
+            const preview = document.getElementById('previewImg');
+            const div = document.createElement('div');
+            div.id = 'previewImg';
+            div.className = 'w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center';
+            div.innerHTML = `
+                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+            `;
+            preview.parentNode.replaceChild(div, preview);
+            
+            // Hide remove button
+            this.style.display = 'none';
+        });
+    }
+
+    // Modal functionality
+    const deleteModal = document.getElementById('deleteModal');
+    if (deleteModal) {
+        const modalButtons = document.querySelectorAll('[data-modal-target="deleteModal"], [data-modal-hide="deleteModal"]');
+        modalButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                deleteModal.classList.toggle('hidden');
+            });
+        });
+    }
+</script>
+{% endblock %}

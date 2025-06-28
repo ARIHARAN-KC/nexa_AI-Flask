@@ -1,0 +1,1288 @@
+{% extends "base.html" %}
+{% block title %}Nexa Workspace{% endblock %}
+
+{% block hero %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<meta charset="UTF-8">
+<div class="container mx-auto px-4 py-6 h-screen flex flex-col">
+    <div class="flex flex-1 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-2xl transition-all duration-300 border border-gray-200 dark:border-gray-700">
+        <!-- Chat Panel -->
+        <div class="w-full md:w-1/2 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+            <!-- Chat Header -->
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="{{ url_for('static', filename='assets/Nexa.svg') }}" class="w-8 h-8 mr-3 animate-pulse" alt="Nexa">
+                    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
+                            Nexa Chat
+                        </span>
+                    </h2>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="clear-chat" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group" title="Clear conversation">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-red-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Chat Messages -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
+                <div class="flex items-start gap-3 animate-fade-in">
+                    <div class="relative">
+                        <img src="{{ url_for('static', filename='assets/Nexa.svg') }}" class="w-8 h-8 rounded-full flex-shrink-0" alt="Nexa">
+                        <div class="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-3 h-3 border-2 border-white dark:border-gray-800"></div>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/80 dark:to-blue-900/60 p-4 rounded-2xl shadow-sm max-w-[85%] relative">
+                        <div class="absolute -left-2 top-4 w-4 h-4 rotate-45 bg-blue-100 dark:bg-blue-900/80"></div>
+                        <p class="text-gray-800 dark:text-white">Hi there! 👋 I'm Nexa, your AI assistant. How can I help you today?</p>
+                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Try asking me to plan a project, research a topic, or write some code for you.</p>
+                        <div class="flex space-x-3 mt-3">
+                            <button class="quick-prompt text-xs bg-blue-600 text-white px-3 py-1 rounded-full hover:bg-blue-700 transition-colors">Plan a project</button>
+                            <button class="quick-prompt text-xs bg-purple-600 text-white px-3 py-1 rounded-full hover:bg-purple-700 transition-colors">Research a topic</button>
+                            <button class="quick-prompt text-xs bg-green-600 text-white px-3 py-1 rounded-full hover:bg-green-700 transition-colors">Write some code</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Input Area -->
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <div class="relative">
+                    <div class="absolute left-3 top-3 text-gray-400 dark:text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                    </div>
+                    <textarea id="user-prompt" rows="2" placeholder="Message Nexa..." 
+                           class="w-full border border-gray-300 dark:border-gray-600 rounded-xl pl-10 py-3 pr-16 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white shadow-sm transition-all duration-200 resize-none"
+                           autocomplete="off"></textarea>
+                    <button id="send-prompt" 
+                            class="absolute right-3 bottom-3 bg-gradient-to-br from-blue-600 to-blue-500 text-white p-2 rounded-xl hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Send message">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">Nexa may produce inaccurate information. Consider verifying important details.</p>
+            </div>
+        </div>
+        
+        <!-- Workspace Panel -->
+        <div class="hidden md:flex md:w-1/2 flex-col bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+            <!-- Workspace Header -->
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400">
+                        Creative Workspace
+                    </span>
+                </h2>
+                <div class="flex items-center space-x-2">
+                    <button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group" title="Help">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="flex border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4">
+                <button class="tab-button py-3 px-4 font-medium flex items-center text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 border-b-2 border-transparent hover:border-blue-500" data-tab="planner">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    Planner
+                </button>
+                <button class="tab-button py-3 px-4 font-medium flex items-center text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200 border-b-2 border-transparent hover:border-purple-500" data-tab="browser">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                    Research
+                </button>
+                <button class="tab-button py-3 px-4 font-medium flex items-center text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-200 border-b-2 border-transparent hover:border-green-500" data-tab="coder">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Code
+                </button>
+                <button class="tab-button py-3 px-4 font-medium flex items-center text-gray-500 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400 transition-colors duration-200 border-b-2 border-transparent hover:border-yellow-500" data-tab="project">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z" clip-rule="evenodd" />
+                    </svg>
+                    Project
+                </button>
+            </div>
+            
+            <!-- Tab Contents -->
+            <div id="tab-contents" class="flex-1 overflow-y-auto bg-white dark:bg-gray-800">
+                <div id="planner" class="tab-content h-full p-6">
+                    <div class="flex flex-col items-center justify-center h-full text-center text-gray-500 dark:text-gray-400 animate-fade-in">
+                        <div class="bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/20 dark:to-blue-800/20 p-5 rounded-2xl mb-6 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-medium mb-3 text-gray-800 dark:text-white">Project Planning</h3>
+                        <p class="max-w-md text-gray-600 dark:text-gray-300 mb-6">Start a conversation with Nexa to generate detailed project plans, timelines, and task breakdowns.</p>
+                        <button class="quick-prompt bg-gradient-to-br from-blue-600 to-blue-500 text-white px-5 py-2 rounded-xl hover:from-blue-700 hover:to-blue-600 transition-all shadow-md">
+                            Plan a project for me
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="browser" class="tab-content h-full p-6 hidden">
+                    <div class="flex flex-col items-center justify-center h-full text-center text-gray-500 dark:text-gray-400 animate-fade-in">
+                        <div class="bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-900/20 dark:to-purple-800/20 p-5 rounded-2xl mb-6 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-medium mb-3 text-gray-800 dark:text-white">Web Research</h3>
+                        <p class="max-w-md text-gray-600 dark:text-gray-300 mb-6">Ask Nexa to browse the web or research topics for you. Results will appear here.</p>
+                        <button class="quick-prompt bg-gradient-to-br from-purple-600 to-purple-500 text-white px-5 py-2 rounded-xl hover:from-purple-700 hover:to-purple-600 transition-all shadow-md">
+                            Research a topic for me
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Updated Code Tab -->
+                <div id="coder" class="tab-content h-full p-6 hidden">
+                    <div class="flex flex-col items-center justify-center h-full text-center text-gray-500 dark:text-gray-400 animate-fade-in" id="coder-placeholder">
+                        <div class="bg-gradient-to-br from-green-100 to-green-50 dark:from-green-900/20 dark:to-green-800/20 p-5 rounded-2xl mb-6 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-medium mb-3 text-gray-800 dark:text-white">Code Generation</h3>
+                        <p class="max-w-md text-gray-600 dark:text-gray-300 mb-6">Ask Nexa to write, explain, or debug code. Generated code will appear here.</p>
+                        <button class="quick-prompt bg-gradient-to-br from-green-600 to-green-500 text-white px-5 py-2 rounded-xl hover:from-green-700 hover:to-green-600 transition-all shadow-md">
+                            Write some code for me
+                        </button>
+                    </div>
+                    <div id="coder-content" class="hidden space-y-6">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-semibold text-lg text-gray-800 dark:text-white">
+                                <span class="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-600 dark:from-green-400 dark:to-teal-400">
+                                    Generated Code
+                                </span>
+                            </h3>
+                            <span id="file-count" class="text-sm bg-gradient-to-br from-green-100 to-green-50 dark:from-green-900 dark:to-green-800 text-green-800 dark:text-green-200 px-3 py-1 rounded-full"></span>
+                        </div>
+                        <div id="code-files" class="space-y-6"></div>
+                    </div>
+                </div>
+                
+                <!-- Project Tab -->
+                <div id="project" class="tab-content h-full p-6 hidden">
+                    <div class="flex flex-col items-center justify-center h-full text-center text-gray-500 dark:text-gray-400 animate-fade-in" id="project-placeholder">
+                        <div class="bg-gradient-to-br from-yellow-100 to-yellow-50 dark:from-yellow-900/20 dark:to-yellow-800/20 p-5 rounded-2xl mb-6 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-medium mb-3 text-gray-800 dark:text-white">Project Output</h3>
+                        <p class="max-w-md text-gray-600 dark:text-gray-300 mb-6">When you complete planning and coding, your downloadable project will appear here.</p>
+                        <button class="quick-prompt bg-gradient-to-br from-yellow-600 to-yellow-500 text-white px-5 py-2 rounded-xl hover:from-yellow-700 hover:to-yellow-600 transition-all shadow-md">
+                            Create a project for me
+                        </button>
+                    </div>
+                    <div id="project-content" class="hidden space-y-6">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-xl text-gray-800 dark:text-white">
+                                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-yellow-600 to-orange-600 dark:from-yellow-400 dark:to-orange-400">
+                                        Project
+                                    </span>
+                                </h3>
+                                <button id="download-project" class="bg-gradient-to-br from-yellow-600 to-yellow-500 text-white px-5 py-2 rounded-xl hover:from-yellow-700 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all duration-200 flex items-center shadow-md hover:shadow-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                    Download Project
+                                </button>
+                            </div>
+                            <div class="mb-6">
+                                <h4 class="font-medium text-lg mb-3 text-gray-800 dark:text-white">Project Details</h4>
+                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg prose dark:prose-invert max-w-none">
+                                    <pre id="project-details" class="text-gray-800 dark:text-gray-200 font-mono text-sm"></pre>
+                                </div>
+                            </div>
+                            <div id="file-tree" class="mt-4">
+                                <h4 class="font-medium text-lg mb-2 text-gray-800 dark:text-white">Project Structure</h4>
+                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg font-mono text-sm"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Prism.js for syntax highlighting -->
+<link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-sql.min.js"></script>
+
+<style>
+.tab-content {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+#tab-contents {
+    display: flex;
+    flex-direction: column;
+}
+
+#chat-messages {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* Smooth transitions */
+.tab-button, .tab-content, #user-prompt, #send-prompt {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.05);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.3);
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* Input focus glow */
+#user-prompt:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Message bubbles */
+#chat-messages .from-blue-100,
+#chat-messages .from-blue-900 {
+    border-radius: 18px 18px 18px 4px;
+}
+
+#chat-messages .bg-gray-100,
+#chat-messages .bg-gray-700 {
+    border-radius: 18px 18px 4px 18px;
+}
+
+/* Animation for fade-in effect */
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.4s ease-out;
+}
+
+/* Active tab styling */
+.tab-button.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+    border-bottom-width: 2px;
+}
+
+.dark .tab-button.active {
+    color: #60a5fa;
+    border-bottom-color: #60a5fa;
+}
+
+/* Typing indicator */
+.typing-indicator {
+    display: inline-flex;
+    align-items: center;
+}
+
+.typing-indicator span {
+    height: 8px;
+    width: 8px;
+    margin: 0 2px;
+    background-color: #9CA3AF;
+    border-radius: 50%;
+    display: inline-block;
+    animation: bounce 1.5s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    #chat-messages {
+        padding: 1rem;
+    }
+    #user-prompt {
+        padding: 0.75rem 1rem;
+    }
+    #send-prompt {
+        padding: 0.5rem;
+    }
+}
+
+/* Gradient backgrounds */
+.bg-gradient-chat {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+.dark .bg-gradient-chat {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+/* Pulse animation for online indicator */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Enhanced Prism.js styles for code tab */
+pre[class*="language-"] {
+    background: #f7fafc !important;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.8;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    text-shadow: none !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.dark pre[class*="language-"] {
+    background: #1a202c !important;
+    border: 1px solid #4a5568;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+code[class*="language-"] {
+    background: transparent !important;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-weight: 400;
+    text-shadow: none !important;
+    letter-spacing: -0.01em;
+    color: #2d3748;
+}
+
+.dark code[class*="language-"] {
+    color: #e2e8f0;
+}
+
+/* Code tab specific styles */
+#coder .bg-white, #coder .dark:bg-gray-800 {
+    background: #ffffff !important;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.dark #coder .bg-white, .dark #coder .dark:bg-gray-800 {
+    background: #1f2937 !important;
+    border: 1px solid #4b5563;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+#code-files .bg-gray-50, #code-files .dark:bg-gray-700 {
+    background: #f9fafb !important;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dark #code-files .bg-gray-50, .dark #code-files .dark:bg-gray-700 {
+    background: #2d3748 !important;
+    border-bottom: 1px solid #4b5563;
+}
+
+#code-files .font-mono {
+    font-size: 0.95rem;
+    line-height: 1.7;
+}
+
+.copy-code {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+}
+
+/* Enhanced tree structure styles */
+.tree-item {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+    user-select: none;
+}
+
+.tree-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.tree-indent {
+    width: 24px;
+    display: inline-block;
+}
+
+.file-tree-folder {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 0.25rem;
+}
+
+.file-tree-folder:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.dark .file-tree-folder:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.file-tree-folder .toggle-icon {
+    transition: transform 0.2s ease;
+}
+
+.file-tree-folder.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.file-tree-content {
+    display: block;
+    margin-left: 8px;
+}
+
+.file-tree-content.hidden {
+    display: none;
+}
+
+.tree-file {
+    padding: 4px 8px;
+    border-radius: 0.25rem;
+}
+
+.tree-file:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.dark .tree-file:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize active tab
+    let activeTab = 'planner';
+    updateActiveTab(activeTab);
+
+    // Tab switching
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+            activeTab = button.dataset.tab;
+            updateActiveTab(activeTab);
+        });
+    });
+    
+    function updateActiveTab(tabName) {
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            const isActive = btn.dataset.tab === tabName;
+            btn.classList.toggle('active', isActive);
+            btn.classList.toggle('text-gray-500', !isActive);
+            btn.classList.toggle('dark:text-gray-400', !isActive);
+            
+            if (isActive) {
+                if (tabName === 'planner') {
+                    btn.classList.add('text-blue-600', 'dark:text-blue-400', 'border-blue-500');
+                    btn.classList.remove('text-purple-600', 'dark:text-purple-400', 'border-purple-500', 
+                                        'text-green-600', 'dark:text-green-400', 'border-green-500',
+                                        'text-yellow-600', 'dark:text-yellow-400', 'border-yellow-500');
+                } else if (tabName === 'browser') {
+                    btn.classList.add('text-purple-600', 'dark:text-purple-400', 'border-purple-500');
+                    btn.classList.remove('text-blue-600', 'dark:text-blue-400', 'border-blue-500', 
+                                        'text-green-600', 'dark:text-green-400', 'border-green-500',
+                                        'text-yellow-600', 'dark:text-yellow-400', 'border-yellow-500');
+                } else if (tabName === 'coder') {
+                    btn.classList.add('text-green-600', 'dark:text-green-400', 'border-green-500');
+                    btn.classList.remove('text-blue-600', 'dark:text-blue-400', 'border-blue-500', 
+                                        'text-purple-600', 'dark:text-purple-400', 'border-purple-500',
+                                        'text-yellow-600', 'dark:text-yellow-400', 'border-yellow-500');
+                } else if (tabName === 'project') {
+                    btn.classList.add('text-yellow-600', 'dark:text-yellow-400', 'border-yellow-500');
+                    btn.classList.remove('text-blue-600', 'dark:text-blue-400', 'border-blue-500', 
+                                        'text-purple-600', 'dark:text-purple-400', 'border-purple-500',
+                                        'text-green-600', 'dark:text-green-400', 'border-green-500');
+                }
+            }
+        });
+        
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.toggle('hidden', content.id !== tabName);
+        });
+    }
+    
+    // Quick prompt buttons
+    document.querySelectorAll('.quick-prompt').forEach(button => {
+        button.addEventListener('click', function() {
+            let prompt = '';
+            if (this.textContent.includes('Plan a project')) {
+                prompt = "Plan a comprehensive project for me with detailed timeline, tasks, and deliverables.";
+            } else if (this.textContent.includes('Research a topic')) {
+                prompt = "Research the latest trends and best practices about this topic for me.";
+            } else if (this.textContent.includes('Write some code')) {
+                prompt = "Write clean, efficient code for me with proper documentation and examples.";
+            } else if (this.textContent.includes('Create a project')) {
+                prompt = "Create a complete project with all necessary files and documentation.";
+            }
+            
+            document.getElementById('user-prompt').value = prompt;
+            document.getElementById('user-prompt').focus();
+        });
+    });
+    
+    // Chat functionality
+    document.getElementById('send-prompt').addEventListener('click', sendPrompt);
+    document.getElementById('user-prompt').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendPrompt();
+        }
+    });
+    
+    // Clear chat
+    document.getElementById('clear-chat').addEventListener('click', () => {
+        const chatMessages = document.getElementById('chat-messages');
+        chatMessages.innerHTML = `
+            <div class="flex items-start gap-3 animate-fade-in">
+                <div class="relative">
+                    <img src="{{ url_for('static', filename='assets/Nexa.svg') }}" class="w-8 h-8 rounded-full flex-shrink-0" alt="Nexa">
+                    <div class="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-3 h-3 border-2 border-white dark:border-gray-800"></div>
+                </div>
+                <div class="bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/80 dark:to-blue-900/60 p-4 rounded-2xl shadow-sm max-w-[85%] relative">
+                    <div class="absolute -left-2 top-4 w-4 h-4 rotate-45 bg-blue-100 dark:bg-blue-900/80"></div>
+                    <p class="text-gray-800 dark:text-white">Hi there! 👋 I'm Nexa, your AI assistant. How can I help you today?</p>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Try asking me to plan a project, research a topic, or write some code for you.</p>
+                    <div class="flex space-x-3 mt-3">
+                        <button class="quick-prompt text-xs bg-blue-600 text-white px-3 py-1 rounded-full hover:bg-blue-700 transition-colors">Plan a project</button>
+                        <button class="quick-prompt text-xs bg-purple-600 text-white px-3 py-1 rounded-full hover:bg-purple-700 transition-colors">Research a topic</button>
+                        <button class="quick-prompt text-xs bg-green-600 text-white px-3 py-1 rounded-full hover:bg-green-700 transition-colors">Write some code</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Auto-resize textarea
+    const textarea = document.getElementById('user-prompt');
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+    });
+    
+    let currentProjectData = null;
+    let isStreaming = false;
+
+    async function sendPrompt() {
+        const promptInput = document.getElementById('user-prompt');
+        const prompt = promptInput.value.trim();
+        if (!prompt || isStreaming) return;
+        
+        isStreaming = true;
+        const sendButton = document.getElementById('send-prompt');
+        sendButton.disabled = true;
+        sendButton.innerHTML = `
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        `;
+        
+        addMessage('user', prompt);
+        promptInput.value = '';
+        promptInput.style.height = 'auto';
+        
+        const typingIndicatorId = addTypingIndicator();
+        
+        try {
+            const response = await fetch('/api/process', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let assistantMessageId = null;
+            
+            removeTypingIndicator(typingIndicatorId);
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                buffer += decoder.decode(value, { stream: true });
+                
+                while (buffer.includes('\n')) {
+                    const newlineIndex = buffer.indexOf('\n');
+                    const message = buffer.substring(0, newlineIndex);
+                    buffer = buffer.substring(newlineIndex + 1);
+                    
+                    try {
+                        const data = JSON.parse(message);
+                        assistantMessageId = processUpdate(data, assistantMessageId);
+                    } catch (e) {
+                        console.error('Error parsing message:', e);
+                    }
+                }
+            }
+            
+            if (buffer) {
+                try {
+                    const data = JSON.parse(buffer);
+                    assistantMessageId = processUpdate(data, assistantMessageId);
+                } catch (e) {
+                    console.error('Error parsing final message:', e);
+                }
+            }
+            
+        } catch (error) {
+            removeTypingIndicator(typingIndicatorId);
+            addMessage('assistant', 'Sorry, something went wrong. Please try again.');
+            console.error('Error:', error);
+        } finally {
+            isStreaming = false;
+            sendButton.disabled = false;
+            sendButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
+                </svg>
+            `;
+        }
+    }
+    
+    function addTypingIndicator() {
+        const chatMessages = document.getElementById('chat-messages');
+        const typingId = 'typing-' + Date.now();
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'flex items-start gap-3 animate-fade-in';
+        typingDiv.id = typingId;
+        
+        typingDiv.innerHTML = `
+            <div class="relative">
+                <img src="{{ url_for('static', filename='assets/Nexa.svg') }}" class="w-8 h-8 rounded-full flex-shrink-0" alt="Nexa">
+                <div class="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-3 h-3 border-2 border-white dark:border-gray-800 animate-pulse"></div>
+            </div>
+            <div class="bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/80 dark:to-blue-900/60 p-3 rounded-2xl shadow-sm max-w-[85%] relative">
+                <div class="absolute -left-2 top-4 w-4 h-4 rotate-45 bg-blue-100 dark:bg-blue-900/80"></div>
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return typingId;
+    }
+    
+    function removeTypingIndicator(id) {
+        const typingElement = document.getElementById(id);
+        if (typingElement) {
+            typingElement.remove();
+        }
+    }
+    
+    function processUpdate(data, existingMessageId = null) {
+        console.log('Processing update:', data);
+        
+        if (data.type === 'conversation') {
+            return existingMessageId ? updateMessage(existingMessageId, data.content) : addMessage('assistant', data.content);
+        } else if (data.type === 'planner') {
+            updatePlannerTab(data);
+            return existingMessageId ? updateMessage(existingMessageId, data.status || 'Planning completed') : addMessage('assistant', data.status || 'Planning completed');
+        } else if (data.type === 'researcher') {
+            updateBrowserTab(data);
+            return existingMessageId ? updateMessage(existingMessageId, data.status || 'Research completed') : addMessage('assistant', data.status || 'Research completed');
+        } else if (data.type === 'coder') {
+            updateCoderTab(data);
+            return existingMessageId ? updateMessage(existingMessageId, data.status || 'Coding completed') : addMessage('assistant', data.status || 'Coding completed');
+        } else if (data.type === 'project') {
+            updateProjectTab(data);
+            currentProjectData = data;
+            return existingMessageId ? updateMessage(existingMessageId, data.status || 'Project completed') : addMessage('assistant', data.status || 'Project completed');
+        } else if (data.type === 'error') {
+            const errorMsg = `Error: ${data.error || 'Unknown error'}`;
+            return existingMessageId ? updateMessage(existingMessageId, errorMsg) : addMessage('assistant', errorMsg);
+        }
+        return existingMessageId;
+    }
+    
+    function addMessage(role, content) {
+        const chatMessages = document.getElementById('chat-messages');
+        const messageId = 'msg-' + Date.now();
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex items-start gap-3 animate-fade-in ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+        messageDiv.id = messageId;
+        
+        const userAvatar = "{{ profile_pic_url or url_for('static', filename='assets/user.png') }}";
+        const avatar = role === 'user' ? userAvatar : "{{ url_for('static', filename='assets/Nexa.svg') }}";
+        const bubbleClass = role === 'user' 
+            ? 'bg-gray-100 dark:bg-gray-700' 
+            : 'bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/80 dark:to-blue-900/60';
+        
+        messageDiv.innerHTML = `
+            ${role === 'user' ? '' : `
+            <div class="relative">
+                <img src="${avatar}" class="w-8 h-8 rounded-full flex-shrink-0" alt="${role}">
+                <div class="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-3 h-3 border-2 border-white dark:border-gray-800"></div>
+            </div>
+            `}
+            <div class="${bubbleClass} p-4 rounded-2xl shadow-sm max-w-[85%] relative">
+                ${role === 'user' ? '' : '<div class="absolute -left-2 top-4 w-4 h-4 rotate-45 from-blue-100 to-blue-50 dark:from-blue-900/80"></div>'}
+                <p class="text-gray-800 dark:text-white">${content}</p>
+            </div>
+            ${role === 'user' ? `
+            <div class="relative">
+                <img src="${avatar}" class="w-8 h-8 rounded-full flex-shrink-0" alt="${role}">
+                <div class="absolute -bottom-1 -right-1 bg-blue-500 rounded-full w-3 h-3 border-2 border-white dark:border-gray-800"></div>
+            </div>
+            ` : ''}
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return messageId;
+    }
+    
+    function updateMessage(messageId, newContent) {
+        const messageDiv = document.getElementById(messageId);
+        if (messageDiv) {
+            const contentDiv = messageDiv.querySelector('div > p');
+            if (contentDiv) contentDiv.textContent = newContent;
+        }
+        return messageId;
+    }
+    
+    function updatePlannerTab(data) {
+        const plannerTab = document.getElementById('planner');
+        if (data.plan) {
+            plannerTab.innerHTML = `
+                <div class="space-y-6">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-xl text-gray-800 dark:text-white">
+                                <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
+                                    ${data.plan.project || 'Project Plan'}
+                                </span>
+                            </h3>
+                            <span class="text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full">
+                                ${new Date().toLocaleDateString()}
+                            </span>
+                        </div>
+                        <div class="mb-6">
+                            <h4 class="font-medium text-lg mb-3 text-gray-800 dark:text-white">Overview</h4>
+                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                <p class="text-gray-800 dark:text-gray-200">${data.plan.summary || 'No summary available'}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-lg mb-3 text-gray-800 dark:text-white">Project Timeline</h4>
+                            <div class="space-y-4">
+                                ${Object.entries(data.plan.plans || {}).map(([step, description], index) => `
+                                    <div class="flex items-start gap-4">
+                                        <div class="flex-shrink-0 mt-1">
+                                            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 text-blue-800 dark:text-blue-200 font-medium">
+                                                ${index + 1}
+                                            </div>
+                                        </div>
+                                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg flex-1">
+                                            <p class="text-gray-800 dark:text-gray-200">${description}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            plannerTab.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-center text-gray-500 dark:text-gray-400 animate-fade-in">
+                    <div class="bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/20 dark:to-blue-800/20 p-5 rounded-2xl mb-6 shadow-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-medium mb-3 text-gray-800 dark:text-white">Project Planning</h3>
+                    <p class="max-w-md text-gray-600 dark:text-gray-300 mb-6">Start a conversation with Nexa to generate detailed project plans, timelines, and task breakdowns.</p>
+                    <button class="quick-prompt bg-gradient-to-br from-blue-600 to-blue-500 text-white px-5 py-2 rounded-xl hover:from-blue-700 hover:to-blue-600 transition-all shadow-md">
+                        Plan a project for me
+                    </button>
+                </div>
+            `;
+        }
+        if (activeTab !== 'planner') {
+            activeTab = 'planner';
+            updateActiveTab(activeTab);
+        }
+    }
+    
+    function updateBrowserTab(data) {
+        const browserTab = document.getElementById('browser');
+        if (data.research || data.queries_results) {
+            browserTab.innerHTML = `
+                <div class="space-y-6">
+                    ${data.keywords?.length ? `
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-lg mb-3 text-gray-800 dark:text-white">Key Topics</h3>
+                        <div class="flex flex-wrap gap-2">
+                            ${data.keywords.map(k => `
+                                <span class="bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-900 dark:to-purple-800 text-purple-800 dark:text-purple-200 px-3 py-1 rounded-full text-sm">
+                                    ${k}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                    ${data.research?.queries?.length ? `
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-lg mb-3 text-gray-800 dark:text-white">Research Questions</h3>
+                        <div class="space-y-3">
+                            ${data.research.queries.map(query => `
+                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                    <p class="text-gray-800 dark:text-gray-200">${query}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                    ${data.queries_results ? `
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                        <h3 class="font-semibold text-lg mb-3 text-gray-800 dark:text-white">Findings</h3>
+                        <div class="space-y-5">
+                            ${Object.entries(data.queries_results).map(([query, result]) => `
+                                <div>
+                                    <h4 class="font-medium text-gray-800 dark:text-white mb-2">${query}</h4>
+                                    ${result.link ? `
+                                    <a href="${result.link}" target="_blank" class="inline-block text-sm text-blue-600 dark:text-blue-400 hover:underline mb-2">
+                                        ${result.link}
+                                    </a>
+                                    ` : ''}
+                                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                        <p class="text-gray-800 dark:text-gray-200">${result.content?.substring(0, 500) || 'No content available'}...</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        } else {
+            browserTab.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-center text-gray-500 dark:text-gray-400 animate-fade-in">
+                    <div class="bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-900/20 dark:to-purple-800/20 p-5 rounded-2xl mb-6 shadow-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-medium mb-3 text-gray-800 dark:text-white">Web Research</h3>
+                    <p class="max-w-md text-gray-600 dark:text-gray-300 mb-6">Ask Nexa to browse the web or research topics for you. Results will appear here.</p>
+                    <button class="quick-prompt bg-gradient-to-br from-purple-600 to-purple-500 text-white px-5 py-2 rounded-xl hover:from-purple-700 hover:to-purple-600 transition-all shadow-md">
+                        Research a topic for me
+                    </button>
+                </div>
+            `;
+        }
+        if (activeTab !== 'browser') {
+            activeTab = 'browser';
+            updateActiveTab(activeTab);
+        }
+    }
+    
+    function updateCoderTab(data) {
+        const coderTab = document.getElementById('coder');
+        const coderContent = document.getElementById('coder-content');
+        const coderPlaceholder = document.getElementById('coder-placeholder');
+        const fileCount = document.getElementById('file-count');
+        const codeFiles = document.getElementById('code-files');
+        
+        console.log('Coder Tab Data:', data);
+        
+        if (data.code?.length) {
+            coderPlaceholder.classList.add('hidden');
+            coderContent.classList.remove('hidden');
+            fileCount.textContent = `${data.code.length} file${data.code.length !== 1 ? 's' : ''}`;
+            
+            codeFiles.innerHTML = data.code.map(file => {
+                const cleanFilename = file.file?.replace(/['"`]/g, '').trim() || 'unnamed_file';
+                let cleanCode = file.code || '';
+                if (cleanCode.startsWith('```') && cleanCode.endsWith('```')) {
+                    const firstNewline = cleanCode.indexOf('\n');
+                    cleanCode = cleanCode.slice(firstNewline + 1, -3).trim();
+                }
+                
+                const extension = cleanFilename.split('.').pop()?.toLowerCase() || '';
+                const languageMap = {
+                    'py': 'python',
+                    'js': 'javascript',
+                    'jsx': 'javascript',
+                    'ts': 'typescript',
+                    'tsx': 'typescript',
+                    'java': 'java',
+                    'cpp': 'cpp',
+                    'c': 'cpp',
+                    'sql': 'sql',
+                    'html': 'html',
+                    'css': 'css'
+                };
+                const language = languageMap[extension] || 'text';
+                
+                return `
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span class="font-mono text-sm text-gray-800 dark:text-gray-200">${cleanFilename}</span>
+                            </div>
+                            <button class="copy-code text-sm bg-gradient-to-br from-green-100 to-green-50 dark:from-green-900 dark:to-green-800 text-green-800 dark:text-green-200 px-3 py-1 rounded-lg hover:from-green-200 hover:to-green-100 dark:hover:from-green-800 dark:hover:to-green-700 transition-all flex items-center" 
+                                    data-code="${encodeURIComponent(cleanCode)}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                </svg>
+                                Copy
+                            </button>
+                        </div>
+                        <pre class="language-${language}"><code class="language-${language}">${cleanCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+                    </div>
+                `;
+            }).join('');
+            
+            Prism.highlightAllUnder(coderTab);
+            
+            document.querySelectorAll('.copy-code').forEach(button => {
+                button.removeEventListener('click', copyCodeHandler);
+                button.addEventListener('click', copyCodeHandler);
+            });
+            
+            function copyCodeHandler() {
+                const code = decodeURIComponent(this.dataset.code);
+                navigator.clipboard.writeText(code).then(() => {
+                    const originalText = this.innerHTML;
+                    this.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Copied
+                    `;
+                    setTimeout(() => this.innerHTML = originalText, 2000);
+                });
+            }
+        } else {
+            coderPlaceholder.classList.remove('hidden');
+            coderContent.classList.add('hidden');
+            codeFiles.innerHTML = '';
+            fileCount.textContent = '';
+        }
+        if (activeTab !== 'coder') {
+            activeTab = 'coder';
+            updateActiveTab(activeTab);
+        }
+    }
+    
+    function updateProjectTab(data) {
+    const projectTab = document.getElementById('project');
+    const projectContent = document.getElementById('project-content');
+    const projectPlaceholder = document.getElementById('project-placeholder');
+    const projectDetails = document.getElementById('project-details');
+    const fileTree = document.getElementById('file-tree').querySelector('div');
+
+    console.log('Project Tab Data:', JSON.stringify(data, null, 2));
+
+    if (data.project) {
+        projectPlaceholder.classList.add('hidden');
+        projectContent.classList.remove('hidden');
+
+        // Clean and format the project details
+        let projectReply = data.project.reply || 'No project details available';
+
+        // Check if the project reply is a single-line tree structure
+        if (projectReply.includes('├──') && !projectReply.includes('\n')) {
+            // Replace extra spaces in tree characters (e.g., ├ ─ ─ to ├──)
+            projectReply = projectReply
+                .replace(/([├└])(\s*[-─])\s*[-─]/g, '$1──')
+                .replace(/([│])\s*/g, '$1 ');
+
+            // Parse the single-line string into a tree structure
+            const parts = projectReply.split(/(?=[├└│])/g); // Split on tree characters
+            let formattedLines = [];
+            let currentIndent = 0;
+            let lastLineHadChildren = false;
+
+            for (let i = 0; i < parts.length; i++) {
+                let part = parts[i].trim();
+                if (!part) continue;
+
+                // Determine the indentation level based on │ characters
+                let indentLevel = 0;
+                if (part.startsWith('│')) {
+                    indentLevel = (part.match(/│/g) || []).length;
+                    part = part.replace(/^│+\s*/, '');
+                }
+
+                // Clean up the part
+                part = part.replace(/^[├└]──\s*/, match => match.startsWith('├') ? '├── ' : '└── ');
+
+                // Adjust indentation for the current line
+                let indent = '  '.repeat(indentLevel);
+                formattedLines.push(`${indent}${part}`);
+
+                // Check if this line indicates children (e.g., a directory)
+                lastLineHadChildren = part.endsWith('/') || part.includes('├──');
+            }
+
+            // Reconstruct the project reply
+            const prefix = 'Created project structure for Vite React Auth App with the following files:\n\n';
+            const suffix = lastLineHadChildren ? '\n' : '';
+            projectReply = prefix + formattedLines.join('\n') + suffix;
+        } else {
+            // Handle multi-line or non-tree content with existing cleaning
+            projectReply = projectReply
+                .replace(/â”œâ”€â”€/g, '├──')
+                .replace(/â”‚/g, '│')
+                .replace(/â””â”€â”€/g, '└──')
+                .replace(/([├└])(\s*[-─])\s*[-─]/g, '$1──')
+                .replace(/\s*([│├──└──])\s*/g, '$1 ')
+                .replace(/^[ \t]*(?=[│├──└──])/gm, (match, offset, string) => {
+                    const indentLevel = (string.match(/^[ \t]*(?=[│├──└──])/gm) || []).indexOf(match);
+                    return '  '.repeat(indentLevel);
+                });
+
+            const lines = projectReply.split('\n');
+            let formattedReply = [];
+            let inTree = false;
+            for (let line of lines) {
+                if (line.includes('├──') || line.includes('└──') || line.includes('│')) {
+                    inTree = true;
+                    line = line.replace(/^\s*([│├──└──])/, '$1 ').replace(/\s+$/, '');
+                    formattedReply.push(line);
+                } else {
+                    if (inTree && line.trim()) {
+                        formattedReply.push('');
+                        inTree = false;
+                    }
+                    formattedReply.push(line.trimEnd());
+                }
+            }
+            projectReply = formattedReply.join('\n');
+        }
+
+        // Set the formatted text in the pre tag
+        projectDetails.textContent = projectReply;
+
+        let fileTreeHtml = '';
+        if (data.code?.length) {
+            const tree = {};
+            data.code.forEach(file => {
+                if (!file.file || !file.code) {
+                    console.warn('Invalid file entry:', file);
+                    return;
+                }
+                const parts = file.file.split('/').filter(part => part.trim());
+                let currentLevel = tree;
+
+                for (let i = 0; i < parts.length; i++) {
+                    const part = parts[i];
+                    if (!currentLevel[part]) {
+                        currentLevel[part] = {};
+                    }
+                    if (i === parts.length - 1) {
+                        currentLevel[part] = { _isFile: true, _content: file.code };
+                    }
+                    currentLevel = currentLevel[part];
+                }
+            });
+
+            console.log('Generated Tree:', JSON.stringify(tree, null, 2));
+
+            const renderTree = (level, depth = 0, path = '') => {
+                let html = '';
+                const indentCount = depth;
+
+                Object.keys(level).sort((a, b) => {
+                    const aIsFile = level[a]._isFile ? 1 : 0;
+                    const bIsFile = level[b]._isFile ? 1 : 0;
+                    return aIsFile - bIsFile || a.localeCompare(b);
+                }).forEach(key => {
+                    if (key.startsWith('_')) return;
+                    const fullPath = path ? `${path}/${key}` : key;
+                    const id = `tree-${fullPath.replace(/[^a-zA-Z0-9]/g, '-')}`;
+
+                    if (level[key]._isFile) {
+                        html += `
+                            <div class="tree-item tree-file text-gray-800 dark:text-gray-200">
+                                ${'<span class="tree-indent"></span>'.repeat(indentCount)}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="tree-icon text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>${key}</span>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="file-tree-folder tree-item text-gray-800 dark:text-gray-200" data-folder="${id}">
+                                ${'<span class="tree-indent"></span>'.repeat(indentCount)}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="tree-icon toggle-icon text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                </svg>
+                                <span>${key}</span>
+                                <div id="${id}" class="file-tree-content">
+                                    ${renderTree(level[key], depth + 1, fullPath)}
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                return html;
+            };
+
+            fileTreeHtml = renderTree(tree);
+        }
+
+        fileTree.innerHTML = fileTreeHtml || '<p class="text-gray-600 dark:text-gray-400">No files available</p>';
+
+        document.querySelectorAll('.file-tree-folder').forEach(folder => {
+            folder.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
+                const content = folder.querySelector('.file-tree-content');
+                const icon = folder.querySelector('.toggle-icon');
+                folder.classList.toggle('collapsed');
+                content.classList.toggle('hidden');
+            });
+        });
+
+        document.getElementById('download-project')?.addEventListener('click', downloadProject);
+    } else {
+        projectPlaceholder.classList.remove('hidden');
+        projectContent.classList.add('hidden');
+        fileTree.innerHTML = '<p class="text-gray-600 dark:text-gray-400">No files available</p>';
+    }
+    if (activeTab !== 'project') {
+        activeTab = 'project';
+        updateActiveTab(activeTab);
+    }
+}
+    
+    async function downloadProject() {
+        if (!currentProjectData) {
+            alert('No project data available to download');
+            return;
+        }
+    
+        try {
+            const response = await fetch('/api/download_project', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code: currentProjectData.code,
+                    project_name: currentProjectData.plan?.project || 'nexa_project'
+                })
+            });
+    
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                let filename = 'nexa_project.zip';
+                const contentDisposition = response.headers.get('Content-Disposition');
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                    if (filenameMatch) filename = filenameMatch[1];
+                }
+                
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            } else {
+                const error = await response.json();
+                console.error('Download failed:', error);
+                alert('Failed to download project: ' + (error.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error downloading project:', error);
+            alert('Error downloading project: ' + error.message);
+        }
+    }
+});
+</script>
+{% endblock %}

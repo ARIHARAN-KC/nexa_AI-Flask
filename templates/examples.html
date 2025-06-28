@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Nexa AI | Example Projects{% endblock %}
+
+{% block hero %}{% endblock %}  <!-- Override to remove hero section -->
+
+{% block content %}
+<section class="py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Hero Section -->
+        <div class="text-center mb-16">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Example Projects</h1>
+            <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                See what you can build with Nexa AI - from simple scripts to complete applications
+            </p>
+        </div>
+
+        <!-- Project Categories -->
+        <div class="mb-12">
+            <div class="flex flex-wrap justify-center gap-4">
+                <button class="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium">All Projects</button>
+                <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium">Web Apps</button>
+                <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium">Mobile Apps</button>
+                <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium">APIs</button>
+                <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium">Data Science</button>
+                <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-medium">Automation</button>
+            </div>
+        </div>
+
+        <!-- Projects Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+            <!-- Project 1 -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+                <div class="h-48 bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                    <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center mb-3">
+                        <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded mr-2">Web App</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">React, Node.js, MongoDB</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">E-commerce Platform</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">Complete online store with product listings, cart, checkout, and admin dashboard.</p>
+                    <div class="code-block mb-4 text-xs">
+                        <span class="text-green-400"># User instruction:</span><br>
+                        <span class="text-gray-300">"Build a React e-commerce site with Stripe payments"</span>
+                    </div>
+                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center">
+                        View Project
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+                <div class="h-48 bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center">
+                    <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center mb-3">
+                        <span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-xs font-medium px-2.5 py-0.5 rounded mr-2">Mobile App</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Flutter, Firebase</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Habit Tracker</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">Cross-platform app for tracking daily habits with reminders and progress charts.</p>
+                    <div class="code-block mb-4 text-xs">
+                        <span class="text-green-400"># User instruction:</span><br>
+                        <span class="text-gray-300">"Create a habit tracking app with notifications"</span>
+                    </div>
+                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center">
+                        View Project
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+                <div class="h-48 bg-gradient-to-r from-yellow-500 to-red-500 flex items-center justify-center">
+                    <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center mb-3">
+                        <span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 text-xs font-medium px-2.5 py-0.5 rounded mr-2">API</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Node.js, Express, MongoDB</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Authentication Service</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">REST API with JWT authentication, email verification, and password reset.</p>
+                    <div class="code-block mb-4 text-xs">
+                        <span class="text-green-400"># User instruction:</span><br>
+                        <span class="text-gray-300">"Create auth API with JWT and email verification"</span>
+                    </div>
+                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center">
+                        View Project
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project 4 -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+                <div class="h-48 bg-gradient-to-r from-indigo-500 to-blue-500 flex items-center justify-center">
+                    <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center mb-3">
+                        <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-medium px-2.5 py-0.5 rounded mr-2">Data Science</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Python, Pandas, Matplotlib</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Sales Analytics Dashboard</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">Interactive dashboard for analyzing sales data with visualizations and predictions.</p>
+                    <div class="code-block mb-4 text-xs">
+                        <span class="text-green-400"># User instruction:</span><br>
+                        <span class="text-gray-300">"Build a sales analysis tool with visualizations"</span>
+                    </div>
+                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center">
+                        View Project
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project 5 -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+                <div class="h-48 bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center">
+                    <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                    </svg>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center mb-3">
+                        <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs font-medium px-2.5 py-0.5 rounded mr-2">Automation</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Python, Selenium</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Web Scraper</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">Automated data collection tool with scheduling and data export capabilities.</p>
+                    <div class="code-block mb-4 text-xs">
+                        <span class="text-green-400"># User instruction:</span><br>
+                        <span class="text-gray-300">"Create a scraper for product prices"</span>
+                    </div>
+                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center">
+                        View Project
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project 6 -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+                <div class="h-48 bg-gradient-to-r from-blue-500 to-teal-500 flex items-center justify-center">
+                    <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center mb-3">
+                        <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-xs font-medium px-2.5 py-0.5 rounded mr-2">Web App</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Vue.js, Firebase</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Event Management System</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">Platform for creating and managing events with ticketing and attendee tracking.</p>
+                    <div class="code-block mb-4 text-xs">
+                        <span class="text-green-400"># User instruction:</span><br>
+                        <span class="text-gray-300">"Build an event management system"</span>
+                    </div>
+                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center">
+                        View Project
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Testimonials -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 mb-20 border border-gray-200 dark:border-gray-700">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">What Developers Say</h2>
+                <p class="text-gray-600 dark:text-gray-300">Hear from developers who've built projects with Nexa AI</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
+                    <div class="flex items-center mb-4">
+                        <img class="w-10 h-10 rounded-full mr-4" src="https://randomuser.me/api/portraits/women/43.jpg" alt="Sarah">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Sarah K.</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Full-stack Developer</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 italic">"Built an entire e-commerce backend in 2 days that would have taken me 2 weeks. The code quality was production-ready!"</p>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
+                    <div class="flex items-center mb-4">
+                        <img class="w-10 h-10 rounded-full mr-4" src="https://randomuser.me/api/portraits/men/32.jpg" alt="James">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">James P.</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Mobile Developer</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 italic">"Nexa AI helped me prototype a Flutter app so quickly that I could focus on polishing the UI instead of boilerplate code."</p>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
+                    <div class="flex items-center mb-4">
+                        <img class="w-10 h-10 rounded-full mr-4" src="https://randomuser.me/api/portraits/women/65.jpg" alt="Priya">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Priya M.</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Data Scientist</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 italic">"Generated a complete data pipeline with visualization dashboard that helped us present findings to stakeholders."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="text-center">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Ready to build your project?</h2>
+            <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+                Start with Nexa AI today and turn your ideas into reality faster than ever
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="{{ url_for('register') }}" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                    Get Started Free
+                </a>
+                <a href="{{ url_for('index') }}#demo" class="px-6 py-3 border border-gray-300 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                    See Live Demo
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

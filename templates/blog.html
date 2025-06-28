@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Nexa AI Blog |Autonomous AI Software Engineer Insights{% endblock %}
+{% block hero %}{% endblock %}
+{% block content %}
+<!-- Blog Hero Section -->
+<div class="hero-gradient text-white">
+    <div class="max-w-7xl mx-auto px-4 py-24 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6">Nexa AI Blog</h1>
+        <p class="text-xl mb-8 max-w-3xl mx-auto">Insights, tutorials, and updates on AI Software Engineer and software development</p>
+        <div class="flex justify-center space-x-4">
+            <a href="#featured" class="px-6 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200" aria-label="Featured Articles">Featured Articles</a>
+            <a href="#categories" class="px-6 py-3 border border-white text-white font-medium rounded-lg hover:bg-white hover:text-blue-600 transition-colors duration-200" aria-label="Browse Categories">Browse Categories</a>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Articles Section -->
+<section id="featured" class="py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Featured Articles</h2>
+        <p class="text-xl text-gray-600 dark:text-gray-300">Discover our most popular posts</p>
+    </div>
+    
+    <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Featured Article 1 -->
+        <article class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <a href="#" aria-label="Read article: How AI is Changing Pair Programming">
+                <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80" 
+                     alt="AI pair programming illustration" 
+                     class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+                        <span>May 15, 2025</span>
+                        <span class="mx-2">•</span>
+                        <span>8 min read</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">How AI is Changing AI Software Engineer</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">Exploring the ways AI assistants are transforming collaborative coding practices and developer productivity.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full dark:bg-blue-900 dark:text-blue-200">AI</span>
+                        <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full dark:bg-purple-900 dark:text-purple-200">Productivity</span>
+                    </div>
+                </div>
+            </a>
+        </article>
+        
+        <!-- Featured Article 2 -->
+        <article class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <a href="#" aria-label="Read article: Multi-Model AI for Code Generation">
+                <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80" 
+                     alt="Multiple AI models illustration" 
+                     class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+                        <span>April 28, 2025</span>
+                        <span class="mx-2">•</span>
+                        <span>10 min read</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Multi-Model AI for Code Generation</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">Why combining different AI models leads to better results than relying on a single system for code generation.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full dark:bg-green-900 dark:text-green-200">Technology</span>
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full dark:bg-yellow-900 dark:text-yellow-200">Research</span>
+                    </div>
+                </div>
+            </a>
+        </article>
+        
+        <!-- Featured Article 3 -->
+        <article class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <a href="#" aria-label="Read article: Building a Full-Stack App with AI Assistance">
+                <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80" 
+                     alt="Full-stack development illustration" 
+                     class="w-full h-48 object-cover">
+                <div class="p-6">
+                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+                        <span>April 10, 2025</span>
+                        <span class="mx-2">•</span>
+                        <span>12 min read</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Building a Full-Stack App with AI Assistance</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">A step-by-step case study of creating a complete application using Nexa AI's project generation features.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full dark:bg-red-900 dark:text-red-200">Tutorial</span>
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full dark:bg-indigo-900 dark:text-indigo-200">Case Study</span>
+                    </div>
+                </div>
+            </a>
+        </article>
+    </div>
+    
+    <div class="text-center mt-12">
+        <a href="#" class="px-6 py-3 border border-blue-600 text-blue-600 font-medium rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-200 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-white" aria-label="View all articles">View All Articles</a>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section id="categories" class="py-16 bg-gray-50 dark:bg-gray-800 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Browse by Category</h2>
+        <p class="text-xl text-gray-600 dark:text-gray-300">Find content that matches your interests</p>
+    </div>
+    
+    <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <a href="#" class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow duration-300" aria-label="AI Technology category">
+            <div class="text-blue-600 mb-4 mx-auto">
+                <svg class="w-10 h-10 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white">AI Technology</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300">12 articles</p>
+        </a>
+        
+        <a href="#" class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow duration-300" aria-label="Tutorials category">
+            <div class="text-blue-600 mb-4 mx-auto">
+                <svg class="w-10 h-10 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Tutorials</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300">8 articles</p>
+        </a>
+        
+        <a href="#" class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow duration-300" aria-label="Case Studies category">
+            <div class="text-blue-600 mb-4 mx-auto">
+                <svg class="w-10 h-10 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Case Studies</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300">5 articles</p>
+        </a>
+        
+        <a href="#" class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow duration-300" aria-label="Product Updates category">
+            <div class="text-blue-600 mb-4 mx-auto">
+                <svg class="w-10 h-10 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Product Updates</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300">7 articles</p>
+        </a>
+    </div>
+</section>
+
+<!-- Recent Posts Section -->
+<section class="py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Recent Posts</h2>
+        <p class="text-xl text-gray-600 dark:text-gray-300">The latest from our blog</p>
+    </div>
+    
+    <div class="max-w-4xl mx-auto">
+        <!-- Recent Post 1 -->
+        <article class="mb-12 pb-12 border-b border-gray-200 dark:border-gray-700">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="md:col-span-1">
+                    <a href="#" aria-label="Read article: The Future of AI-Assisted Development">
+                        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80" 
+                             alt="AI development future illustration" 
+                             class="w-full h-48 md:h-32 object-cover rounded-lg">
+                    </a>
+                </div>
+                <div class="md:col-span-3">
+                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+                        <span>May 5, 2025</span>
+                        <span class="mx-2">•</span>
+                        <span>6 min read</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
+                        <a href="#" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors" aria-label="Read article: The Future of AI-Assisted Development">The Future of AI-Assisted Development</a>
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">Exploring predictions for how AI will continue to evolve and impact software development workflows in the coming years.</p>
+                    <a href="#" class="text-blue-600 dark:text-blue-400 font-medium hover:underline" aria-label="Continue reading: The Future of AI-Assisted Development">Continue reading →</a>
+                </div>
+            </div>
+        </article>
+        
+        <!-- Recent Post 2 -->
+        <article class="mb-12 pb-12 border-b border-gray-200 dark:border-gray-700">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="md:col-span-1">
+                    <a href="#" aria-label="Read article: Comparing AI Code Generation Models">
+                        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80" 
+                             alt="AI models comparison illustration" 
+                             class="w-full h-48 md:h-32 object-cover rounded-lg">
+                    </a>
+                </div>
+                <div class="md:col-span-3">
+                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+                        <span>April 22, 2025</span>
+                        <span class="mx-2">•</span>
+                        <span>9 min read</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
+                        <a href="#" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors" aria-label="Read article: Comparing AI Code Generation Models">Comparing AI Code Generation Models</a>
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">An in-depth analysis of how different AI models perform across various programming languages and problem domains.</p>
+                    <a href="#" class="text-blue-600 dark:text-blue-400 font-medium hover:underline" aria-label="Continue reading: Comparing AI Code Generation Models">Continue reading →</a>
+                </div>
+            </div>
+        </article>
+        
+        <!-- Recent Post 3 -->
+        <article class="mb-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="md:col-span-1">
+                    <a href="#" aria-label="Read article: Best Practices for AI Pair Programming">
+                        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80" 
+                             alt="AI pair programming best practices illustration" 
+                             class="w-full h-48 md:h-32 object-cover rounded-lg">
+                    </a>
+                </div>
+                <div class="md:col-span-3">
+                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+                        <span>April 15, 2025</span>
+                        <span class="mx-2">•</span>
+                        <span>7 min read</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
+                        <a href="#" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors" aria-label="Read article: Best Practices for AI Pair Programming">Best Practices for AI  AI Software Engineer</a>
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">Tips and techniques for getting the most out of AI-assisted development while maintaining code quality.</p>
+                    <a href="#" class="text-blue-600 dark:text-blue-400 font-medium hover:underline" aria-label="Continue reading: Best Practices for AI Pair Programming">Continue reading →</a>
+                </div>
+            </div>
+        </article>
+    </div>
+    
+    <div class="text-center mt-8">
+        <a href="#" class="px-6 py-3 border border-blue-600 text-blue-600 font-medium rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-200 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-white" aria-label="Load more articles">Load More</a>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="py-16 bg-gray-50 dark:bg-gray-800 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Stay Updated</h2>
+        <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">Subscribe to our newsletter for the latest articles and product updates</p>
+        
+        <form class="max-w-md mx-auto">
+            <div class="flex flex-col sm:flex-row gap-4">
+                <input type="email" placeholder="Your email address" class="flex-grow px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" aria-label="Email address for newsletter subscription" required>
+                <button type="submit" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600" aria-label="Subscribe to newsletter">Subscribe</button>
+            </div>
+            <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">We respect your privacy. Unsubscribe at any time.</p>
+        </form>
+    </div>
+</section>
+{% endblock %}

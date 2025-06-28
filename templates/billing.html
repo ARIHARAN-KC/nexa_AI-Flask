@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Nexa AI | Billing & Subscription{% endblock %}
+
+{% block hero %}
+<!-- Hero Section -->
+<div class="hero-gradient text-white">
+    <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6">Manage Your Billing</h1>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">View and manage your subscription plans, payment methods, and billing history with ease.</p>
+            <a href="#" class="px-6 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200" aria-label="View Plans">View Plans</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Billing Content -->
+<section id="plans" class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-6xl mx-auto">
+        <!-- Subscription Plans -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white text-center mb-4">Subscription Plans</h2>
+            <p class="text-xl text-gray-600 dark:text-gray-300 text-center mb-12">Choose the plan that best fits your needs.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Free Plan</h3>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mb-4">$0<span class="text-base font-normal">/month</span></p>
+                    <ul class="text-gray-600 dark:text-gray-300 mb-6 space-y-2">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Limited project generation
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Basic AI model access
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Community support
+                        </li>
+                    </ul>
+                    <button class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 transition-colors" disabled>Current Plan</button>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 border-2 border-blue-600 dark:border-blue-400">
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Pro Plan</h3>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mb-4">$29<span class="text-base font-normal">/month</span></p>
+                    <ul class="text-gray-600 dark:text-gray-300 mb-6 space-y-2">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Unlimited project generation
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Full AI model access
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Priority support
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Advanced analytics
+                        </li>
+                    </ul>
+                    <a href="#" class="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors text-center">Upgrade to Pro</a>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                    <h3 class="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Enterprise Plan</h3>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Custom</p>
+                    <ul class="text-gray-600 dark:text-gray-300 mb-6 space-y-2">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            All Pro features
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Dedicated support
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Custom integrations
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Team accounts
+                        </li>
+                    </ul>
+                    <a href="{{ url_for('contact') }}" class="block w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors text-center">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white text-center mb-4">Payment Methods</h2>
+            <p class="text-xl text-gray-600 dark:text-gray-300 text-center mb-8">Manage your payment methods securely.</p>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Saved Cards</h3>
+                    <button id="add-payment-method" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors">Add Payment Method</button>
+                </div>
+                <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <!-- Example Card -->
+                    <div class="py-4 flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-900 dark:text-white">Visa ending in 1234</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Expires 12/25</p>
+                        </div>
+                        <button class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">Remove</button>
+                    </div>
+                    <!-- Placeholder for no cards -->
+                    <div class="py-8 text-center text-gray-500 dark:text-gray-400" id="no-payment-methods">
+                        No payment methods added yet.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Billing History -->
+        <div>
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white text-center mb-4">Billing History</h2>
+            <p class="text-xl text-gray-600 dark:text-gray-300 text-center mb-8">View your past transactions.</p>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <!-- Example Transaction -->
+                    <div class="py-4 flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-900 dark:text-white">Pro Plan Subscription</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">2025-04-01</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-gray-900 dark:text-white">$29.00</p>
+                            <a href="#" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">View Invoice</a>
+                        </div>
+                    </div>
+                    <!-- Placeholder for no history -->
+                    <div class="py-8 text-center text-gray-500 dark:text-gray-400" id="no-billing-history">
+                        No billing history available.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Animation for fade-in effect */
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.3s ease-out;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add animation to sections on load
+    document.querySelectorAll('#, #payment-methods, #billing-history').forEach(section => {
+        section.classList.add('animate-fade-in');
+    });
+
+    // Placeholder for adding payment method (requires backend integration)
+    document.getElementById('add-payment-method').addEventListener('click', function() {
+        alert('Add payment method functionality requires backend integration with a payment processor like Stripe.');
+    });
+
+    // Placeholder for removing payment method
+    document.querySelectorAll('.text-red-600').forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Are you sure you want to remove this payment method?')) {
+                alert('Remove payment method functionality requires backend integration.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

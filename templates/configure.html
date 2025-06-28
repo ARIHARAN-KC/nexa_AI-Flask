@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}Configure Nexa{% endblock %}
+
+{% block hero %}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 bg-gray-950 min-h-screen">
+    <div class="max-w-4xl mx-auto space-y-10">
+        <!-- Header Section -->
+        <div class="text-center animate-fade-in-down">
+            <h1 class="text-5xl font-extrabold text-gray-100 mb-4 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 bg-clip-text text-transparent tracking-tight">AI Configuration</h1>
+            <p class="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                Seamlessly customize your AI assistant with advanced models and secure API integration
+            </p>
+        </div>
+
+        <!-- API Key Help Card -->
+        <div class="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-md shadow-xl hover:shadow-2xl transition-all duration-300">
+            <div class="flex items-start gap-5">
+                <div class="flex-shrink-0 p-3 bg-blue-900/50 rounded-full animate-pulse-slow">
+                    <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="w-full">
+                    <h3 class="text-xl font-semibold text-gray-100 mb-2">Need API Keys?</h3>
+                    <p class="text-gray-400 mb-4">Access your API keys from these leading providers:</p>
+                    <div class="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap sm:gap-3">
+                        {% for provider in [
+                            {'name': 'OpenAI', 'url': 'https://platform.openai.com/api-keys', 'img': 'https://static.vecteezy.com/system/resources/previews/022/227/364/large_2x/openai-chatgpt-logo-icon-free-png.png', 'color': 'blue'},
+                            {'name': 'Google', 'url': 'https://makersuite.google.com/app/apikey', 'img': 'https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg', 'color': 'red'},
+                            {'name': 'DeepSeek', 'url': 'https://platform.deepseek.com/', 'img': 'https://miro.medium.com/v2/resize:fit:717/1*tlUlwc-ABsXvhFjK3JpC9g.png', 'color': 'green'},
+                            {'name': 'Cohere', 'url': 'https://dashboard.cohere.com/api-keys', 'img': 'https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/cohere.png', 'color': 'yellow'},
+                            {'name': 'OpenRouter', 'url': 'https://openrouter.ai/keys', 'img': 'https://openrouter.ai/favicon.ico', 'color': 'purple'}
+                        ] %}
+                            <a href="{{ provider.url }}" target="_blank" class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-{{ provider.color }}-900/30 text-{{ provider.color }}-200 hover:bg-{{ provider.color }}-800/50 hover:text-{{ provider.color }}-100 transform hover:-translate-y-1 transition-all duration-200 shadow-md">
+                                <img src="{{ provider.img }}" class="w-5 h-5 mr-2" alt="{{ provider.name }}">
+                                {{ provider.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Form -->
+        <div class="bg-gray-900 rounded-2xl shadow-xl overflow-hidden border border-gray-700/50 transform hover:shadow-2xl transition-all duration-300">
+            <div class="p-8 sm:p-10">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="p-3 bg-blue-900/30 rounded-full animate-spin-slow">
+                        <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-100">AI Configuration</h2>
+                </div>
+                
+                <!-- Flashed messages -->
+               
+                <form method="POST" action="{{ url_for('configure') }}" class="space-y-8">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Model Selection -->
+                    <div class="space-y-3 group">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-sm font-medium text-gray-300 group-hover:text-blue-300 transition-colors">AI Model</label>
+                            <span class="text-xs text-gray-400">Select your preferred model</span>
+                        </div>
+                        <div class="relative">
+                            {{ form.model(class="block w-full pl-5 pr-12 py-4 text-base border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-xl bg-gray-800 text-gray-100 appearance-none transition-all duration-200 hover:border-gray-500 shadow-md") }}
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400 group-hover:text-blue-400 transition-colors" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                        {% for error in form.model.errors %}
+                            <p class="mt-2 text-sm text-red-400 flex items-center gap-2 animate-shake">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- API Key Input -->
+                    <div class="space-y-3 group">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-sm font-medium text-gray-300 group-hover:text-blue-300 transition-colors">API Key</label>
+                            <span class="text-xs text-gray-400">Keep this secure</span>
+                        </div>
+                        <div class="relative">
+                            {{ form.api_key(class="block w-full px-5 py-4 rounded-xl border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-gray-100 pr-12 transition-all duration-200 hover:border-gray-500 shadow-md", placeholder="sk-... or AIza...") }}
+                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400 group-hover:text-blue-400 transition-colors" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7 jimmy neutron3 0 016 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                        {% for error in form.api_key.errors %}
+                            <p class="mt-2 text-sm text-red-400 flex items-center gap-2 animate-shake">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Project Name -->
+                    <div class="space-y-3 group">
+                        <label class="block text-sm font-medium text-gray-300 group-hover:text-blue-300 transition-colors">Project Name</label>
+                        <div class="relative">
+                            {{ form.project_name(class="block w-full px-5 py-4 rounded-xl border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-gray-100 transition-all duration-200 hover:border-gray-500 shadow-md", placeholder="e.g. Marketing-Campaign-Analysis") }}
+                        </div>
+                        {% for error in form.project_name.errors %}
+                            <p class="mt-2 text-sm text-red-400 flex items-center gap-2 animate-shake">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                {{ error }}
+                            </p>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="pt-6">
+                        <button type="submit" class="w-full flex justify-center items-center gap-3 py-4 px-8 rounded-xl shadow-lg text-base font-semibold text-gray-100 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-500/50 transform hover:scale-105 transition-all duration-300">
+                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                            Save Configuration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Model Comparison Table -->
+        <div class="bg-gray-900 rounded-2xl shadow-xl overflow-hidden border border-gray-700/50 transform hover:shadow-2xl transition-all duration-300">
+            <div class="p-8 sm:p-10">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="p-3 bg-purple-900/30 rounded-full animate-bounce-slow">
+                        <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-100">Model Comparison</h2>
+                </div>
+                
+                <div class="overflow-x-auto rounded-xl border border-gray-700/50 shadow-inner">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead class="bg-gray-800">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Feature</th>
+                                {% for model in [
+                                    {'name': 'GPT-4', 'img': 'https://static.vecteezy.com/system/resources/previews/022/227/364/large_2x/openai-chatgpt-logo-icon-free-png.png'},
+                                    {'name': 'Gemini', 'img': 'https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg'},
+                                    {'name': 'DeepSeek', 'img': 'https://miro.medium.com/v2/resize:fit:717/1*tlUlwc-ABsXvhFjK3JpC9g.png'},
+                                    {'name': 'Cohere', 'img': 'https://raw.githubusercontent.com/deepset-ai/haystack-integrations/main/logos/cohere.png'},
+                                    {'name': 'OpenRouter', 'img': 'https://openrouter.ai/favicon.ico'}
+                                ] %}
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                        <div class="flex items-center gap-2">
+                                            <img src="{{ model.img }}" class="w-5 h-5" alt="{{ model.name }}">
+                                            {{ model.name }}
+                                        </div>
+                                    </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody class="bg-gray-900 divide-y divide-gray-700">
+                            {% for row in [
+                                {'feature': 'Best For', 'values': ['Creative writing, complex reasoning', 'Multimodal tasks, technical analysis', 'Technical docs, long-context tasks', 'Text generation, summarization', 'Multiple model access, routing']},
+                                {'feature': 'Strengths', 'values': ['Creativity, conversational ability', 'Multimodal, large context', 'Precision, technical accuracy', 'Consistency, language understanding', 'Model aggregation, cost optimization']},
+                                {'feature': 'Response Speed', 'values': ['Fast|75|blue', 'Very Fast|90|red', 'Extremely Fast|95|green', 'Fast|80|yellow', 'Variable|85|purple'], 'type': 'progress'},
+                                {'feature': 'Context Length', 'values': ['32K tokens|blue', '128K tokens|red', '128K tokens|green', '8K tokens|yellow', 'Varies by model|purple'], 'type': 'badge'},
+                                {'feature': 'Specialization', 'values': ['General purpose', 'Multimodal', 'Technical', 'Language', 'API routing']}
+                            ] %}
+                                <tr class="hover:bg-gray-800/50 transition-colors duration-200">
+                                    <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-100">{{ row.feature }}</td>
+                                    {% for value in row['values'] %}
+                                        <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-400">
+                                            {% if row.type == 'progress' %}
+                                                {% set parts = value.split('|') %}
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-full bg-gray-700 rounded-full h-2.5">
+                                                        <div class="bg-{{ parts[2] }}-500 h-2.5 rounded-full transition-all duration-500" style="width: {{ parts[1] }}%"></div>
+                                                    </div>
+                                                    <span>{{ parts[0] }}</span>
+                                                </div>
+                                            {% elif row.type == 'badge' %}
+                                                {% set parts = value.split('|') %}
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-{{ parts[1] }}-900/50 text-{{ parts[1] }}-200">{{ parts[0] }}</span>
+                                            {% else %}
+                                                {{ value }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+    }
+    @keyframes pulseSlow {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    @keyframes spinSlow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    @keyframes bounceSlow {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-4px); }
+    }
+    .animate-fade-in-down { animation: fadeInDown 0.8s ease-out; }
+    .animate-slide-in { animation: slideIn 0.5s ease-out; }
+    .animate-shake { animation: shake 0.4s ease-in-out; }
+    .animate-pulse-slow { animation: pulseSlow 2s infinite; }
+    .animate-spin-slow { animation: spinSlow 8s linear infinite; }
+    .animate-bounce-slow { animation: bounceSlow 2s infinite; }
+</style>
+{% endblock %}

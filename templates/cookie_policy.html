@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Nexa AI | Cookie Policy{% endblock %}
+
+{% block hero %}{% endblock %}  <!-- Override to remove hero section -->
+
+{% block content %}
+<section class="py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Cookie Policy</h1>
+            <p class="text-xl text-gray-600 dark:text-gray-300">
+                Last Updated: March 31, 2025
+            </p>
+        </div>
+
+        <!-- Policy Content -->
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">1. What Are Cookies?</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                Cookies are small text files stored on your device when you visit our website. They help us enhance your experience, analyze usage, and provide personalized content.
+            </p>
+
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">2. Types of Cookies We Use</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                We use the following types of cookies:
+            </p>
+            <ul class="list-disc pl-6 text-gray-600 dark:text-gray-300 mb-6 space-y-2">
+                <li><strong>Essential Cookies:</strong> Necessary for the website to function, such as maintaining your login session.</li>
+                <li><strong>Analytics Cookies:</strong> Help us understand how visitors use our site (e.g., Google Analytics).</li>
+                <li><strong>Preference Cookies:</strong> Remember your settings and preferences, like dark mode.</li>
+            </ul>
+
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">3. How We Use Cookies</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                Cookies are used to:
+            </p>
+            <ul class="list-disc pl-6 text-gray-600 dark:text-gray-300 mb-6 space-y-2">
+                <li>Ensure the website operates smoothly.</li>
+                <li>Analyze traffic and improve our services.</li>
+                <li>Enhance your user experience by remembering your preferences.</li>
+            </ul>
+
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">4. Managing Cookies</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                You can control cookies through your browser settings. Most browsers allow you to block or delete cookies, but this may impact your ability to use certain features of our Service. For more information, consult your browser's help section.
+            </p>
+
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">5. Third-Party Cookies</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                We may use third-party services (e.g., Google Analytics) that set their own cookies. These are subject to the respective third parties' privacy policies.
+            </p>
+
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">6. Contact Us</h2>
+            <p class="text-gray-600 dark:text-gray-300">
+                If you have questions about our use of cookies, please contact us:
+            </p>
+            <address class="not-italic text-gray-600 dark:text-gray-300 mt-4">
+                Nexa AI<br>
+                Askar Garden<br>
+                Karur, Tamil Nadu, India<br>
+                Email: <a href="mailto:support@nexaai.com" class="text-blue-600 dark:text-blue-400 hover:underline">support@nexaai.com</a><br>
+                Phone: +91 9865329242
+            </address>
+        </div>
+
+        <!-- Back to Home -->
+        <div class="text-center mt-12">
+            <a href="{{ url_for('index') }}" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                Back to Home
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
