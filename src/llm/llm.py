@@ -42,9 +42,7 @@ class LLM:
             # Use OpenRouter's free DeepSeek endpoint (OpenAI-compatible)
             self.model = ChatOpenAI(
                 openai_api_key=api_key,
-                #model_name="deepseek/deepseek-r1:free",  # R1 free model via OpenRouter
-                model_name = "deepseek/deepseek-prover-v2:free",
-                #model_name = "meta-llama/llama-3.3-8b-instruct:free",
+                model_name="deepseek/deepseek-r1:free",  # R1 free model via OpenRouter
                 base_url="https://openrouter.ai/api/v1"
             )
 
