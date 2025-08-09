@@ -1,5 +1,5 @@
-.env
-api.txt
-serect.txt
-node_modules
 env/
+node_modules/
+*.env
+api.txt
+secret.txt
