@@ -2,4 +2,4 @@ env/
 node_modules/
 *.env
 api.txt
-secret.txt
+serect.txt
