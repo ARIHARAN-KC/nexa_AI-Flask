@@ -22,7 +22,7 @@ from flask_migrate import Migrate
 import json
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', '958932d67f8decd00598e34a9064b63b5c22e0f8a36e595c014490a6e388eb01')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your_key')
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
