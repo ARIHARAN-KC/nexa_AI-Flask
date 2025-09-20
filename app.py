@@ -960,8 +960,14 @@ def manage_conversation(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-import os
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# Initialize database
+with app.app_context():
+    db.create_all()
+
+# Run the application
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    print(f"Starting server on port {port}")
+    app.run(host="0.0.0.0", port=port, debug=False)
