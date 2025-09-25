@@ -20,13 +20,41 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import json
+from urllib.parse import urlparse
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', '958932d67f8decd00598e34a9064b63b5c22e0f8a36e595c014490a6e388eb01')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') 
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+
+# PostgreSQL configuration
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    # Parse the database URL for Neon.tech
+    parsed_url = urlparse(database_url)
+    
+    # Extract components
+    username = parsed_url.username
+    password = parsed_url.password
+    hostname = parsed_url.hostname
+    port = parsed_url.port or 5432
+    database = parsed_url.path[1:]  # Remove leading slash
+    
+    # Construct the SQLAlchemy connection string
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{username}:{password}@{hostname}:{port}/{database}?sslmode=require'
+else:
+    # Fallback to SQLite if DATABASE_URL is not set
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_recycle': 300,
+    'pool_pre_ping': True,
+}
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
 
 db = SQLAlchemy(app)
@@ -102,55 +130,67 @@ class AccountSettingsForm(FlaskForm):
     two_factor = BooleanField('Enable Two-Factor Authentication')
     submit = SubmitField('Save Changes')
 
-# Models
+# Models - Updated for PostgreSQL
 class User(UserMixin, db.Model):
+    __tablename__ = 'users'
+    
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     first_name = db.Column(db.String(50), nullable=True)
     last_name = db.Column(db.String(50), nullable=True)
-    bio = db.Column(db.String(500), nullable=True)
+    bio = db.Column(db.Text, nullable=True)
     profile_picture = db.Column(db.String(255), nullable=True)
     project_updates = db.Column(db.Boolean, default=True)
     security_alerts = db.Column(db.Boolean, default=True)
     two_factor_enabled = db.Column(db.Boolean, default=False)
     api_keys = db.Column(db.JSON, nullable=True, default={})
-    subscriptions = db.relationship('Subscription', backref='user', lazy=True)
-    payment_methods = db.relationship('PaymentMethod', backref='user', lazy=True)
-    billing_history = db.relationship('BillingHistory', backref='user', lazy=True)
-    conversations = db.relationship('Conversation', backref='user', lazy=True)
+    
+    # Relationships
+    subscriptions = db.relationship('Subscription', backref='user', lazy=True, cascade='all, delete-orphan')
+    payment_methods = db.relationship('PaymentMethod', backref='user', lazy=True, cascade='all, delete-orphan')
+    billing_history = db.relationship('BillingHistory', backref='user', lazy=True, cascade='all, delete-orphan')
+    conversations = db.relationship('Conversation', backref='user', lazy=True, cascade='all, delete-orphan')
 
     def get_id(self):
         return str(self.id)
 
 class Subscription(db.Model):
+    __tablename__ = 'subscriptions'
+    
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     plan = db.Column(db.String(50), nullable=False, default='Free')
     start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     end_date = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(20), nullable=False, default='Active')
 
 class PaymentMethod(db.Model):
+    __tablename__ = 'payment_methods'
+    
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     card_type = db.Column(db.String(50), nullable=False)
     last_four = db.Column(db.String(4), nullable=False)
     expiry_date = db.Column(db.String(5), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 class BillingHistory(db.Model):
+    __tablename__ = 'billing_history'
+    
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     description = db.Column(db.String(200), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     invoice_id = db.Column(db.String(100), nullable=True)
 
 class Conversation(db.Model):
+    __tablename__ = 'conversations'
+    
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     messages = db.Column(db.JSON, nullable=False)
     project_name = db.Column(db.String(100), nullable=True)
@@ -364,6 +404,8 @@ def api_key_form():
         api_key = form.api_key.data
         project_name = form.project_name.data
         
+        if current_user.api_keys is None:
+            current_user.api_keys = {}
         current_user.api_keys[model] = api_key
         db.session.commit()
         
@@ -450,6 +492,8 @@ def configure():
         api_key = form.api_key.data
         project_name = form.project_name.data
         
+        if current_user.api_keys is None:
+            current_user.api_keys = {}
         current_user.api_keys[model] = api_key
         db.session.commit()
         
@@ -964,7 +1008,12 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Initialize database
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Error creating database tables: {e}")
+        print("You may need to create the tables manually in your PostgreSQL database")
 
 # Run the application
 if __name__ == "__main__":
