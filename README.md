@@ -96,4 +96,4 @@ Models: Gemini Pro, Cohere, ChatGPT, OpenRouter (DeepSeek)
 
 Author
 
-https://github.com/your-username
+https://github.com/ARIHARAN-KC
