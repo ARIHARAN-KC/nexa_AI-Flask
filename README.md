@@ -16,14 +16,14 @@ def create_web_app(requirements):
         app.route(route)(func)
     return app
 ✅ Automatically generates tests, documentation, and deployment scripts along with the code.
-
+```
 ✨ Key Features
 Project Generation – Turn natural language descriptions into complete, structured projects with proper architecture and dependencies.
 
 Multi-Model Intelligence – Leverage multiple AI models for optimal code generation and problem-solving.
 
 Structured Workspace – Organized environment for planning, research, coding, and project management all in one place.
-
+```
 ⚙️ How Nexa-AI Works
 Describe Your Project – Provide high-level instructions in plain English.
 
@@ -32,7 +32,7 @@ AI Research & Planning – Nexa-AI proposes the best architecture and technologi
 Code Generation – Multiple AI models collaborate to generate production-ready code with documentation.
 
 Review & Refine – Iterate with AI assistance to refine and improve your project.
-
+```
 🧠 Integrated AI Models
 Gemini Pro – Advanced reasoning and problem-solving
 
@@ -41,7 +41,7 @@ Cohere – Natural language understanding and generation
 ChatGPT – Creative coding and conversational interface
 
 OpenRouter (DeepSeek) – Specialized for complex technical implementations
-
+```
 📸 Screenshots
 Home
 
@@ -76,6 +76,7 @@ Workspace
 Planner Tab
 
 <img width="1697" height="1034" src="https://github.com/user-attachments/assets/1b521244-82b8-4f60-82a2-27b191e3c508" />
+```
 📂 Example Projects
 🛒 E-Commerce Website
 Instruction: "Build a React e-commerce site with product listings, cart, and checkout"
@@ -92,7 +93,7 @@ Instruction: "Node.js API for user authentication with JWT"
 📱 Mobile App
 Instruction: "Flutter app to track daily habits with reminders"
 ➡️ Nexa-AI generated a cross-platform Flutter app with Firebase backend & notifications.
-
+```
 🌟 Why Nexa-AI?
 End-to-End Automation – Not just snippets, but full projects with tests, docs, and CI/CD.
 
@@ -101,21 +102,18 @@ Multi-Model Collaboration – Best AI model assigned per task for higher accurac
 Built-in Verification Loop – Auto-generated tests, static checks, and sandbox runs.
 
 Developer-Friendly – Clean, modular code with clear documentation.
-
+```
 🛠 Tech Stack
-Backend: Python (FastAPI) / Node.js (Express)
+Backend: Python (FastAPI)
 
-Frontend: React / Next.js
+Frontend: HTML, Tailwind css
 
 Testing: Pytest / Jest (auto-generated)
-
-Deployment: Docker, Kubernetes, GitHub Actions
 
 Models: Gemini Pro, Cohere, ChatGPT, OpenRouter (DeepSeek)
 
 🚀 Getting Started
-bash
-Copy code
+
 # Clone the repo
 git clone https://github.com/your-repo/nexa-ai.git
 cd nexa-ai
@@ -127,5 +125,4 @@ pip install -r requirements.txt
 python app.py
 Now open http://localhost:5000 in your browser to start building projects with Nexa-AI 🚀
 
-pgsql
-Copy code
+
