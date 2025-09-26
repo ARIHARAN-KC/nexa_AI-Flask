@@ -3,7 +3,7 @@ Nexa-AI — Autonomous AI Software Engineer
 AI-powered Autonomous Software Developer for faster, smarter project creation.
 Transform high-level instructions into complete software projects with architecture, code, tests, documentation, and deployment — all automated.
 
-📋 Table of Contents
+Table of Contents
 
 About
 
@@ -23,7 +23,7 @@ Tech Stack
 
 Author
 
-⚡️ How It Works
+How It Works
 
 Describe Your Project
 Provide high-level instructions in plain English.
@@ -39,26 +39,27 @@ Review & Refine
 Iterate with AI to refine and improve your project.
 
 
-✅ Why Choose Nexa-AI?
+Why Choose Nexa-AI?
 Feature	Details
-⚡️ End-to-End Automation	From idea → code → tests → docs → deployment.
-🤝 Multi-Model Collaboration	Best AI model assigned per task for optimal results.
-🔍 Verification Loop	Auto-generated tests, static checks, and sandbox runs.
-🧑‍💻 Developer-Friendly	Clean, modular code with clear documentation.
-🧠 AI Integrations
+  End-to-End Automation	From idea → code → tests → docs → deployment.
+  Multi-Model Collaboration	Best AI model assigned per task for optimal results.
+  Verification Loop	Auto-generated tests, static checks, and sandbox runs.
+  Developer-Friendly	Clean, modular code with clear documentation.
+  AI Integrations
 Model	Role
-🧩 Gemini Pro	Advanced reasoning & problem-solving
-✍️ Cohere	Natural language understanding & generation
-💡 ChatGPT	Creative coding & conversational assistance
-⚙️ OpenRouter (DeepSeek)	Complex technical implementations
+  Gemini Pro	Advanced reasoning & problem-solving
+  Cohere Natural language understanding & generation
+  ChatGPT	Creative coding & conversational assistance
+  OpenRouter (DeepSeek)	Complex technical implementations
 
-📂 Example Projects
+Example Projects
 Instruction	Nexa-AI Output
-🛒 E-Commerce Website	React app with Redux, Stripe integration, and responsive design.
-📊 Data Analysis Tool	Jupyter notebook with Pandas & Matplotlib visualizations.
-🔐 REST API Service	Express.js backend with MongoDB, JWT auth & Swagger docs.
-📱 Mobile App	Flutter app with Firebase backend & push notifications.
-⚙️ Installation
+  E-Commerce Website	React app with Redux, Stripe integration, and responsive design.
+  Data Analysis Tool	Jupyter notebook with Pandas & Matplotlib visualizations.
+  REST API Service	Express.js backend with MongoDB, JWT auth & Swagger docs.
+  Mobile App	Flutter app with Firebase backend & push notifications.
+
+Installation
 Prerequisites
 
 Python 3.9+
@@ -75,7 +76,7 @@ cd nexa-ai
 # Install dependencies
 pip install -r requirements.txt
 
-🚀 Usage
+Usage
 # Run the service
 python app.py
 
@@ -84,7 +85,7 @@ Open in your browser:
 
 http://localhost:5000
 
-🛠 Tech Stack
+Tech Stack
 
 Backend: Python (FastAPI)
 
