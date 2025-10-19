@@ -152,8 +152,11 @@ Based on actual codebase composition:
 
 **Ariharan K.C.**  
 ariharankc@gmail.com
+
 [GitHub](https://github.com/ARIHARAN-KC)  
+
 [LinkedIn](https://www.linkedin.com/in/ariharankc07/)
+
 [Portfolifo](https://ariharan-portfolifo.vercel.app/)
 
 ---
