@@ -122,18 +122,20 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         
-        // Update coder tab
-        const codeHTML = Array.isArray(data.code) ? 
-            data.code.map(file => `
+         const codeHTML = Array.isArray(data.code) ? 
+        data.code.map(file => {
+            console.log('Code file:', file);
+            return `
                 <div class="bg-white p-3 rounded-lg shadow mb-4">
                     <h4 class="font-medium">${file.file || 'Untitled'}</h4>
                     <pre class="bg-gray-100 p-2 rounded mt-2 overflow-x-auto text-sm">${file.code || 'No code generated'}</pre>
                 </div>
-            `).join('') : '';
-        
-        document.getElementById('coder').innerHTML = codeHTML || `
-            <div class="text-gray-500 italic">No code generated.</div>
-        `;
+            `;
+        }).join('') : '';
+    
+    document.getElementById('coder').innerHTML = codeHTML || `
+        <div class="text-gray-500 italic">No code generated.</div>
+    `;
         
         // Update project tab
         document.getElementById('project').innerHTML = `

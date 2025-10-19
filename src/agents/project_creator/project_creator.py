@@ -109,17 +109,9 @@ class ProjectCreator:
         # Normalize file paths in full_code
         for file_data in full_code:
             file_data["file"] = self.clean_file_path(file_data["file"])
-        prompt = self.render(project_name, full_code)
-        for attempt in range(self.max_retries):
-            try:
-                response = self.llm.inference(prompt)
-                valid_response = self.validate_response(response)
-                if valid_response:
-                    print("ProjectCreator validated output:", json.dumps(valid_response, indent=2))
-                    return valid_response
-                print(f"Attempt {attempt + 1}/{self.max_retries} - Invalid response format: {response[:100]}...")
-            except Exception as e:
-                print(f"Attempt {attempt + 1}/{self.max_retries} failed with error: {str(e)}")
-                if attempt == self.max_retries - 1:
-                    raise RuntimeError(f"Failed after {self.max_retries} attempts: {str(e)}")
-        raise RuntimeError(f"Failed to get valid response after {self.max_retries} attempts")
+        
+        # Return the actual files instead of Python code
+        return {
+            "reply": f"Created project structure for {project_name} with {len(full_code)} files",
+            "code": full_code
+        }
