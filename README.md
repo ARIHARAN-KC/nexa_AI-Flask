@@ -1,100 +1,169 @@
-Nexa-AI — Autonomous AI Software Engineer
+# Nexa-AI — Autonomous AI Software Engineer
 
-AI-powered Autonomous Software Developer for faster, smarter project creation.
-Transform high-level instructions into complete software projects with architecture, code, tests, documentation, and deployment — all automated.
+> **Describe your idea in plain English. Get a complete software project — auto-generated.**  
+> Architecture, code, tests, documentation, and deployment setup — all created autonomously by AI.
 
-Table of Contents
+![Home](imgs/image.png)
+![Features](imgs/image-1.png)
+![Work flow](imgs/image-2.png)
+![AI integrations](imgs/image-3.png)
+![Projects](imgs/image-4.png)
+![Contact](imgs/image-5.png)
+![Configuration](imgs/image-6.png)
+![Workspace](imgs/image-7.png)
+![Planner Tab](imgs/image-8.png)
+![Coder Tab](imgs/image-9.png)
+![Project Tab](imgs/image-10.png)
+![Nexa IDE](imgs/image-11.png)
+---
 
-About
+## Table of Contents
 
-How It Works
+- [About](#-about)
+- [How It Works](#-how-it-works)
+- [Why Choose Nexa-AI?](#-why-choose-nexa-ai)
+- [AI Integrations](#-ai-integrations)
+- [Example Projects](#-example-projects)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Tech Stack](#-tech-stack)
+- [Author](#-author)
 
-Why Choose Nexa-AI?
+---
 
-AI Integrations
+## ℹAbout
 
-Example Projects
+**Nexa-AI** is an autonomous AI developer that transforms high-level natural language instructions into full-stack software projects. Built as a **web-based interface**, it leverages multiple AI models to plan, code, test, and document your application — all in one click.
 
-Installation
+Ideal for rapid prototyping, MVP development, or learning modern tech stacks.
 
-Usage
+---
 
-Tech Stack
+## How It Works
 
-Author
+1. **Describe Your Project**  
+   Enter a simple prompt like: _"Build a blog with user login and Markdown support."_
 
-How It Works
+2. **AI Planning**  
+   Nexa-AI selects the best architecture and tools (e.g., Flask + SQLite + Tailwind).
 
-Describe Your Project
-Provide high-level instructions in plain English.
+3. **Autonomous Code Generation**  
+   AI writes backend logic (Python), frontend templates (HTML + Jinja), and basic interactivity (JavaScript).
 
+4. **Output Delivery**  
+   Download a complete, organized project folder — ready to run or extend.
 
-AI Research & Planning
-Nexa-AI proposes the best architecture and technologies.
+---
 
-Code Generation
-Multiple AI models collaborate to generate production-ready code with documentation.
+## Why Choose Nexa-AI?
 
-Review & Refine
-Iterate with AI to refine and improve your project.
+- **End-to-End Automation**: From idea → working project in minutes  
+- **Multi-AI Collaboration**: Best model for planning, coding, and refinement  
+- **Production-Ready Structure**: Modular, documented, and tested  
+- **Zero Setup for Users**: Entirely browser-based — no CLI needed
 
+---
 
-Why Choose Nexa-AI?
-Feature	Details
-  End-to-End Automation	From idea → code → tests → docs → deployment.
-  Multi-Model Collaboration	Best AI model assigned per task for optimal results.
-  Verification Loop	Auto-generated tests, static checks, and sandbox runs.
-  Developer-Friendly	Clean, modular code with clear documentation.
-  AI Integrations
-Model	Role
-  Gemini Pro	Advanced reasoning & problem-solving
-  Cohere Natural language understanding & generation
-  ChatGPT	Creative coding & conversational assistance
-  OpenRouter (DeepSeek)	Complex technical implementations
+## AI Integrations
 
-Example Projects
-Instruction	Nexa-AI Output
-  E-Commerce Website	React app with Redux, Stripe integration, and responsive design.
-  Data Analysis Tool	Jupyter notebook with Pandas & Matplotlib visualizations.
-  REST API Service	Express.js backend with MongoDB, JWT auth & Swagger docs.
-  Mobile App	Flutter app with Firebase backend & push notifications.
+Nexa-AI uses a smart routing system to assign tasks to the most capable model:
 
-Installation
-Prerequisites
+| Model | Role |
+|------|------|
+| **Gemini Pro** | System design & technical planning |
+| **Cohere** | Understanding natural language requirements |
+| **ChatGPT** | Code generation & documentation |
+| **OpenRouter (DeepSeek)** | Complex logic & edge-case handling |
 
-Python 3.9+
+> API keys are configured server-side (see `.env`).
 
-pip
+---
 
-git
+## Example Projects
 
-Setup
-# Clone the repo
-git clone https://github.com/your-repo/nexa-ai.git
+| Your Prompt | Generated Output |
+|-----------|------------------|
+| _"Create a task manager with login"_ | Flask app with user auth, SQLite, responsive HTML/Jinja templates |
+| _"Build a weather dashboard"_ | HTML frontend with JS API calls, Python backend for data caching |
+| _"Make a REST-like API for notes"_ | Flask routes, JSON responses, simple CRUD logic |
+| _"Generate a portfolio website"_ | Static HTML + Tailwind + Jinja, with contact form backend |
+
+---
+
+## Installation
+
+### Prerequisites
+- Python 3.9+
+- `pip`
+- `git`
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/ARIHARAN-KC/nexa-ai.git
 cd nexa-ai
+
+# Create virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+# venv\Scripts\activate  # Windows
 
 # Install dependencies
 pip install -r requirements.txt
+```
 
-Usage
-# Run the service
+> Copy `.env.example` to `.env` and add your AI provider API keys.
+
+---
+
+## Usage
+
+Start the web server:
+
+```bash
 python app.py
+```
 
+Open your browser:  
+[http://localhost:5000](http://localhost:5000)
 
-Open in your browser:
+Enter your project idea, click **"Generate"**, and download your complete software project!
 
-http://localhost:5000
+---
 
-Tech Stack
+## Tech Stack
 
-Backend: Python (FastAPI)
+Based on actual codebase composition:
 
-Frontend: HTML, TailwindCSS
+- **HTML**  
+- **Python Flask**  
+- **Jinja**   
+- **JavaScript**   
 
-Testing: Pytest / Jest (auto-generated)
+**Framework**: Lightweight Python web framework (e.g., Flask)  
+**Styling**: Tailwind CSS  
+**Templating**: Jinja2  
+**Deployment**: Ready for local or cloud (Render, Railway, etc.)
 
-Models: Gemini Pro, Cohere, ChatGPT, OpenRouter (DeepSeek)
+---
 
-Author
+## Author
 
-https://github.com/ARIHARAN-KC
+**Ariharan K.C.**  
+ariharankc@gmail.com
+[GitHub](https://github.com/ARIHARAN-KC)  
+[LinkedIn](https://www.linkedin.com/in/ariharankc07/)
+[Portfolifo](https://ariharan-portfolifo.vercel.app/)
+
+---
+
+## License
+
+Distributed under the **MIT License**. See [LICENSE](LICENSE) for details.
+
+---
+
+> **The future of software development is autonomous. Start building smarter — not harder.**
+
+---

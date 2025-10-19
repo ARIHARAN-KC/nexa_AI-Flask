@@ -1,25 +1,21 @@
 import json
 from jinja2 import Environment, BaseLoader
-
 from src.llm import LLM
 
-
 decision_prompt = open("src/agents/decision_taker/prompt.jinja2").read().strip()
-
 
 class DecisionTaker:
     def __init__(self, base_model, api_key) -> None:
         self.llm = LLM(base_model, api_key)
+        self.max_retries = 5  # Maximum number of retry attempts
 
     def render(self, prompt: str) -> str:
         env = Environment(loader=BaseLoader())
         template = env.from_string(decision_prompt)
-
         return template.render(prompt=prompt)
 
     def validate_response(self, response):
         response = response.strip().replace("```json", "```")
-
         if response.startswith("```") and response.endswith("```"):
             response = response[3:-3].strip()
 
@@ -34,14 +30,16 @@ class DecisionTaker:
 
         return response
 
-    def execute(self, prompt):
+    def execute(self, prompt, retry_count=0):
+        if retry_count >= self.max_retries:
+            raise RuntimeError("Max retries reached for DecisionTaker")
+
         rendered_prompt = self.render(prompt)
         response = self.llm.inference(rendered_prompt)
+        valid_response = self.validate_response(response)
 
-        valid_resposne = self.validate_response(response)
-
-        while not valid_resposne:
+        if not valid_response:
             print("The Decision Taker has made an error, trying again...\n")
-            return self.execute(prompt)
+            return self.execute(prompt, retry_count + 1)
 
-        return valid_resposne
+        return valid_response

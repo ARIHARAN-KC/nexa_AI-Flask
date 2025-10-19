@@ -82,6 +82,12 @@
                     </span>
                 </h2>
                 <div class="flex items-center space-x-2">
+                    <!-- IDE Launch Button -->
+                    <a href="{{ url_for('ide') }}" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group" title="Open Full IDE">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                    </a>
                     <button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group" title="Help">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -115,6 +121,13 @@
                         <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z" clip-rule="evenodd" />
                     </svg>
                     Project
+                </button>
+                <!-- IDE Tab -->
+                <button class="tab-button py-3 px-4 font-medium flex items-center text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200 border-b-2 border-transparent hover:border-indigo-500" data-tab="ide">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    IDE
                 </button>
             </div>
             
@@ -219,6 +232,39 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- In the IDE tab content -->
+<div id="ide" class="tab-content h-full p-6 hidden">
+    <div class="flex flex-col items-center justify-center h-full text-center text-gray-500 dark:text-gray-400 animate-fade-in">
+        <div class="bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-900/20 dark:to-indigo-800/20 p-5 rounded-2xl mb-6 shadow-inner">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+            </svg>
+        </div>
+        <h3 class="text-xl font-medium mb-3 text-gray-800 dark:text-white">Integrated Development Environment</h3>
+        <p class="max-w-md text-gray-600 dark:text-gray-300 mb-6">Open the full IDE to write, edit, and manage your code files with syntax highlighting and file management.</p>
+        
+        <div class="flex flex-col gap-4 w-full max-w-md">
+            <a href="{{ url_for('ide') }}" class="bg-gradient-to-br from-indigo-600 to-indigo-500 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-600 transition-all shadow-md flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
+                </svg>
+                Launch Full IDE
+            </a>
+            
+            <button id="load-to-ide" class="bg-gradient-to-br from-green-600 to-green-500 text-white px-6 py-3 rounded-xl hover:from-green-700 hover:to-green-600 transition-all shadow-md flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Load Current Project to IDE
+            </button>
+        </div>
+
+        <div class="mt-6 grid grid-cols-2 gap-4 w-full max-w-md">
+            <!-- ... existing feature boxes ... -->
+        </div>
+    </div>
+</div>
             </div>
         </div>
     </div>
@@ -554,22 +600,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     btn.classList.add('text-blue-600', 'dark:text-blue-400', 'border-blue-500');
                     btn.classList.remove('text-purple-600', 'dark:text-purple-400', 'border-purple-500', 
                                         'text-green-600', 'dark:text-green-400', 'border-green-500',
-                                        'text-yellow-600', 'dark:text-yellow-400', 'border-yellow-500');
+                                        'text-yellow-600', 'dark:text-yellow-400', 'border-yellow-500',
+                                        'text-indigo-600', 'dark:text-indigo-400', 'border-indigo-500');
                 } else if (tabName === 'browser') {
                     btn.classList.add('text-purple-600', 'dark:text-purple-400', 'border-purple-500');
                     btn.classList.remove('text-blue-600', 'dark:text-blue-400', 'border-blue-500', 
                                         'text-green-600', 'dark:text-green-400', 'border-green-500',
-                                        'text-yellow-600', 'dark:text-yellow-400', 'border-yellow-500');
+                                        'text-yellow-600', 'dark:text-yellow-400', 'border-yellow-500',
+                                        'text-indigo-600', 'dark:text-indigo-400', 'border-indigo-500');
                 } else if (tabName === 'coder') {
                     btn.classList.add('text-green-600', 'dark:text-green-400', 'border-green-500');
                     btn.classList.remove('text-blue-600', 'dark:text-blue-400', 'border-blue-500', 
                                         'text-purple-600', 'dark:text-purple-400', 'border-purple-500',
-                                        'text-yellow-600', 'dark:text-yellow-400', 'border-yellow-500');
+                                        'text-yellow-600', 'dark:text-yellow-400', 'border-yellow-500',
+                                        'text-indigo-600', 'dark:text-indigo-400', 'border-indigo-500');
                 } else if (tabName === 'project') {
                     btn.classList.add('text-yellow-600', 'dark:text-yellow-400', 'border-yellow-500');
                     btn.classList.remove('text-blue-600', 'dark:text-blue-400', 'border-blue-500', 
                                         'text-purple-600', 'dark:text-purple-400', 'border-purple-500',
-                                        'text-green-600', 'dark:text-green-400', 'border-green-500');
+                                        'text-green-600', 'dark:text-green-400', 'border-green-500',
+                                        'text-indigo-600', 'dark:text-indigo-400', 'border-indigo-500');
+                } else if (tabName === 'ide') {
+                    btn.classList.add('text-indigo-600', 'dark:text-indigo-400', 'border-indigo-500');
+                    btn.classList.remove('text-blue-600', 'dark:text-blue-400', 'border-blue-500', 
+                                        'text-purple-600', 'dark:text-purple-400', 'border-purple-500',
+                                        'text-green-600', 'dark:text-green-400', 'border-green-500',
+                                        'text-yellow-600', 'dark:text-yellow-400', 'border-yellow-500');
                 }
             }
         });
@@ -1068,81 +1124,28 @@ document.addEventListener('DOMContentLoaded', function() {
         projectPlaceholder.classList.add('hidden');
         projectContent.classList.remove('hidden');
 
-        // Clean and format the project details
+        // Extract and clean the project summary
         let projectReply = data.project.reply || 'No project details available';
-
-        // Check if the project reply is a single-line tree structure
-        if (projectReply.includes('├──') && !projectReply.includes('\n')) {
-            // Replace extra spaces in tree characters (e.g., ├ ─ ─ to ├──)
-            projectReply = projectReply
-                .replace(/([├└])(\s*[-─])\s*[-─]/g, '$1──')
-                .replace(/([│])\s*/g, '$1 ');
-
-            // Parse the single-line string into a tree structure
-            const parts = projectReply.split(/(?=[├└│])/g); // Split on tree characters
-            let formattedLines = [];
-            let currentIndent = 0;
-            let lastLineHadChildren = false;
-
-            for (let i = 0; i < parts.length; i++) {
-                let part = parts[i].trim();
-                if (!part) continue;
-
-                // Determine the indentation level based on │ characters
-                let indentLevel = 0;
-                if (part.startsWith('│')) {
-                    indentLevel = (part.match(/│/g) || []).length;
-                    part = part.replace(/^│+\s*/, '');
-                }
-
-                // Clean up the part
-                part = part.replace(/^[├└]──\s*/, match => match.startsWith('├') ? '├── ' : '└── ');
-
-                // Adjust indentation for the current line
-                let indent = '  '.repeat(indentLevel);
-                formattedLines.push(`${indent}${part}`);
-
-                // Check if this line indicates children (e.g., a directory)
-                lastLineHadChildren = part.endsWith('/') || part.includes('├──');
-            }
-
-            // Reconstruct the project reply
-            const prefix = 'Created project structure for Vite React Auth App with the following files:\n\n';
-            const suffix = lastLineHadChildren ? '\n' : '';
-            projectReply = prefix + formattedLines.join('\n') + suffix;
-        } else {
-            // Handle multi-line or non-tree content with existing cleaning
+        
+        // Extract only the summary part (remove the directory tree)
+        const summaryMatch = projectReply.match(/Created project structure for (.+?) with the following files:([\s\S]*?)(?=```|\n\n|$)/);
+        
+        if (summaryMatch) {
+            // Use only the summary part before the directory tree
+            projectReply = summaryMatch[0].trim();
+            
+            // Clean up any remaining tree characters
             projectReply = projectReply
                 .replace(/â”œâ”€â”€/g, '├──')
                 .replace(/â”‚/g, '│')
                 .replace(/â””â”€â”€/g, '└──')
                 .replace(/([├└])(\s*[-─])\s*[-─]/g, '$1──')
                 .replace(/\s*([│├──└──])\s*/g, '$1 ')
-                .replace(/^[ \t]*(?=[│├──└──])/gm, (match, offset, string) => {
-                    const indentLevel = (string.match(/^[ \t]*(?=[│├──└──])/gm) || []).indexOf(match);
-                    return '  '.repeat(indentLevel);
-                });
-
-            const lines = projectReply.split('\n');
-            let formattedReply = [];
-            let inTree = false;
-            for (let line of lines) {
-                if (line.includes('├──') || line.includes('└──') || line.includes('│')) {
-                    inTree = true;
-                    line = line.replace(/^\s*([│├──└──])/, '$1 ').replace(/\s+$/, '');
-                    formattedReply.push(line);
-                } else {
-                    if (inTree && line.trim()) {
-                        formattedReply.push('');
-                        inTree = false;
-                    }
-                    formattedReply.push(line.trimEnd());
-                }
-            }
-            projectReply = formattedReply.join('\n');
+                .replace(/\n.*?[├└│].*?(?=\n|$)/g, '') // Remove any remaining tree lines
+                .trim();
         }
 
-        // Set the formatted text in the pre tag
+        // Set the cleaned summary in the pre tag
         projectDetails.textContent = projectReply;
 
         let fileTreeHtml = '';
@@ -1237,8 +1240,65 @@ document.addEventListener('DOMContentLoaded', function() {
         activeTab = 'project';
         updateActiveTab(activeTab);
     }
-}
-    
+}    
+
+// Add to the existing workspace JavaScript
+document.getElementById('load-to-ide')?.addEventListener('click', async function() {
+    try {
+        const response = await fetch('/api/ide/load_workspace_project', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Open IDE in new tab
+            window.open("{{ url_for('ide') }}", '_blank');
+            
+            // Show success message
+            const chatMessages = document.getElementById('chat-messages');
+            const successMsg = document.createElement('div');
+            successMsg.className = 'flex items-start gap-3 animate-fade-in';
+            successMsg.innerHTML = `
+                <div class="relative">
+                    <img src="{{ url_for('static', filename='assets/Nexa.svg') }}" class="w-8 h-8 rounded-full flex-shrink-0" alt="Nexa">
+                    <div class="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-3 h-3 border-2 border-white dark:border-gray-800"></div>
+                </div>
+                <div class="bg-gradient-to-br from-green-100 to-green-50 dark:from-green-900/80 dark:to-green-900/60 p-4 rounded-2xl shadow-sm max-w-[85%] relative">
+                    <div class="absolute -left-2 top-4 w-4 h-4 rotate-45 bg-green-100 dark:bg-green-900/80"></div>
+                    <p class="text-gray-800 dark:text-white">Project loaded into IDE! Opening IDE now...</p>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">${data.message}</p>
+                </div>
+            `;
+            chatMessages.appendChild(successMsg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        console.error('Error loading project to IDE:', error);
+        const chatMessages = document.getElementById('chat-messages');
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'flex items-start gap-3 animate-fade-in';
+        errorMsg.innerHTML = `
+            <div class="relative">
+                <img src="{{ url_for('static', filename='assets/Nexa.svg') }}" class="w-8 h-8 rounded-full flex-shrink-0" alt="Nexa">
+                <div class="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-3 h-3 border-2 border-white dark:border-gray-800"></div>
+            </div>
+            <div class="bg-gradient-to-br from-red-100 to-red-50 dark:from-red-900/80 dark:to-red-900/60 p-4 rounded-2xl shadow-sm max-w-[85%] relative">
+                <div class="absolute -left-2 top-4 w-4 h-4 rotate-45 bg-red-100 dark:bg-red-900/80"></div>
+                <p class="text-gray-800 dark:text-white">Failed to load project into IDE</p>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">${error.message}</p>
+            </div>
+        `;
+        chatMessages.appendChild(errorMsg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+});
+
     async function downloadProject() {
         if (!currentProjectData) {
             alert('No project data available to download');

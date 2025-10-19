@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexa IDE</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background-color: #f8fafc;
+        }
+        
+        .dark body {
+            background-color: #0f172a;
+        }
+
+        /* IDE Styles */
+        #file-explorer {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .file-item {
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin: 1px 0;
+            user-select: none;
+        }
+
+        .file-item:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .file-item.active {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .file-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+        }
+
+        .folder-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            transition: transform 0.2s;
+        }
+
+        .folder-item.collapsed .folder-icon {
+            transform: rotate(-90deg);
+        }
+
+        .folder-children {
+            margin-left: 16px;
+            overflow: hidden;
+        }
+
+        .folder-item.collapsed .folder-children {
+            display: none;
+        }
+
+        /* Editor Tabs */
+        .editor-tab {
+            padding: 8px 16px;
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            min-width: 120px;
+        }
+
+        .dark .editor-tab {
+            background: #1e293b;
+            border-right-color: #374151;
+        }
+
+        .editor-tab.active {
+            background: white;
+            border-bottom: 2px solid #3b82f6;
+        }
+
+        .dark .editor-tab.active {
+            background: #0f172a;
+        }
+
+        .editor-tab-close {
+            margin-left: 8px;
+            opacity: 0.6;
+            padding: 2px;
+            border-radius: 2px;
+        }
+
+        .editor-tab-close:hover {
+            opacity: 1;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .dark .editor-tab-close:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Terminal */
+        .terminal-line {
+            margin: 2px 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .terminal-command {
+            color: #60a5fa;
+        }
+
+        .terminal-output {
+            color: #d1d5db;
+        }
+
+        .terminal-error {
+            color: #ef4444;
+        }
+
+        /* Code Editor */
+        #code-editor {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            line-height: 1.5;
+            tab-size: 4;
+        }
+
+        /* Scrollbar styling for IDE */
+        #file-explorer::-webkit-scrollbar,
+        #terminal::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #file-explorer::-webkit-scrollbar-track,
+        #terminal::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #file-explorer::-webkit-scrollbar-thumb,
+        #terminal::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+
+        .dark #file-explorer::-webkit-scrollbar-thumb,
+        .dark #terminal::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Animation for fade-in effect */
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fade-in 0.4s ease-out;
+        }
+
+        /* Theme transition */
+        .transition-colors {
+            transition-property: background-color, border-color, color, fill, stroke;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 300ms;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    transitionProperty: {
+                        'colors': 'background-color, border-color, color, fill, stroke',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-200 h-screen overflow-hidden">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="{{ url_for('workspace') }}" class="text-xl font-bold tracking-tight flex items-center" aria-label="Nexa IDE Home">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                Nexa IDE
+            </a>
+            
+            <div class="flex items-center space-x-4">
+                <span class="text-sm opacity-80">{{ current_user.username }}</span>
+                <a href="{{ url_for('workspace') }}" class="px-3 py-1 bg-white text-indigo-600 rounded text-sm hover:bg-gray-100 transition-colors">
+                    Back to Workspace
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main IDE Container -->
+    <div class="container mx-auto h-[calc(100vh-80px)] flex flex-col">
+        <!-- IDE Header -->
+        <div class="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div class="flex items-center space-x-4">
+                <h3 class="font-semibold text-gray-800 dark:text-white">
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+                        Nexa IDE
+                    </span>
+                </h3>
+                <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                    <span id="current-file">No file selected</span>
+                    <span id="file-language" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-xs"></span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="save-file" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm flex items-center disabled:opacity-50" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Save
+                </button>
+                <button id="new-file" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    New File
+                </button>
+                <button id="new-folder" class="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors text-sm flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                    New Folder
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-1 overflow-hidden">
+         <!-- File Explorer Sidebar -->
+<!-- File Explorer Sidebar -->
+<div class="w-64 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-col">
+    <div class="p-3 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+            <h4 class="font-medium text-gray-800 dark:text-white">Explorer</h4>
+            <div class="flex space-x-1">
+                <button id="load-workspace-project" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" title="Load Workspace Project">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+                <button id="refresh-explorer" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" title="Refresh">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+                <button id="collapse-all" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" title="Collapse All">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="file-explorer" class="flex-1 overflow-y-auto p-2">
+        <!-- File tree will be populated here -->
+        <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+            <p class="text-sm">No files available</p>
+            <button id="create-sample-files" class="mt-2 px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700">
+                Create Sample Files
+            </button>
+        </div>
+    </div>
+</div>
+
+            <!-- Main Editor Area -->
+            <div class="flex-1 flex flex-col">
+                <!-- Editor Tabs -->
+                <div id="editor-tabs" class="flex border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900">
+                    <!-- Open file tabs will appear here -->
+                </div>
+
+                <!-- Code Editor -->
+                <div id="code-editor-container" class="flex-1 relative">
+                    <textarea id="code-editor" 
+                        class="w-full h-full font-mono text-sm p-4 resize-none border-0 focus:outline-none focus:ring-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        placeholder="Select a file to edit or create a new file..."
+                        spellcheck="false"></textarea>
+                    <div id="editor-overlay" class="absolute inset-0 bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                        <div class="text-center text-gray-500 dark:text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p class="text-lg mb-2">Welcome to Nexa IDE</p>
+                            <p class="text-sm opacity-75">Select a file from the explorer or create a new one to start coding</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Terminal -->
+                <div class="h-48 border-t border-gray-200 dark:border-gray-700 flex flex-col">
+                    <div class="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                        <h4 class="font-medium text-sm text-gray-800 dark:text-white">Terminal</h4>
+                        <div class="flex space-x-1">
+                            <button id="clear-terminal" class="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" title="Clear Terminal">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="terminal" class="flex-1 bg-black text-green-400 font-mono text-sm p-3 overflow-y-auto">
+                        <div class="terminal-line">Nexa IDE Terminal - Ready</div>
+                        <div class="terminal-line">Type commands to execute...</div>
+                    </div>
+                    <div class="p-2 border-t border-gray-700 bg-black">
+                        <div class="flex items-center">
+                            <span class="text-green-400 mr-2">$</span>
+                            <input id="terminal-input" 
+                                class="flex-1 bg-transparent text-green-400 outline-none font-mono placeholder-green-600"
+                                placeholder="Type a command..."
+                                autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Prism.js for syntax highlighting -->
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-php.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-ruby.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-go.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-rust.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-swift.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markdown.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-xml-doc.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-yaml.min.js"></script>
+
+    <!-- IDE JavaScript -->
+    <script src="{{ url_for('static', filename='js/nexaIde.js') }}"></script>
+</body>
+</html>

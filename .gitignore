@@ -3,3 +3,13 @@ node_modules/
 *.env
 api.txt
 serect.txt
+node_modules
+env/
+users.db
+migrations/
+*.pyc
+__pycache__/
+instance/
+.DS_Store
+.vscode/
+*.sqlite3
