@@ -31,7 +31,7 @@
 
 ---
 
-## ℹAbout
+## About
 
 **Nexa-AI** is an autonomous AI developer that transforms high-level natural language instructions into full-stack software projects. Built as a **web-based interface**, it leverages multiple AI models to plan, code, test, and document your application — all in one click.
 
