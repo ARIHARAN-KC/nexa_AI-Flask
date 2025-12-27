@@ -13,3 +13,4 @@ instance/
 .DS_Store
 .vscode/
 *.sqlite3
+D:\python_project\nexa_AI-Flask-Main\migrations

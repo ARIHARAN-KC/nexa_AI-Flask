@@ -1,31 +1,78 @@
-You are an expert software engineer helping to fix bugs in code. Analyze the following code and error:
+from jinja2 import Environment, BaseLoader
+from src.llm import LLM
 
-Error: {{ error }}
+project_creator_planner_prompt = open(
+    "src/agents/project_creator/prompt_planner.jinja2"
+).read().strip()
 
-Code:
-{{ code }}
 
-{% if step == "propose_solution" %}
-Based on this analysis:
-{{ context.analysis }}
+class ProjectCreatorPlanner:
+    def __init__(self, base_model, api_key):
+        self.llm = LLM(base_model, api_key)
 
-Provide a detailed solution to fix this error. Explain:
-1. What needs to be changed
-2. Why the change will fix the error
-3. Any potential side effects
-{% elif step == "generate_fixed_code" %}
-Based on this solution:
-{{ context.solution }}
+    def render(self, project_name, description):
+        env = Environment(loader=BaseLoader())
+        template = env.from_string(project_creator_planner_prompt)
+        return template.render(
+            project_name=project_name,
+            description=description
+        )
 
-Generate the complete fixed code. Wrap the final code in triple backticks (```).
+    def validate_response(self, response: str) -> bool:
+        # Can be extended later
+        return bool(response and "Plan:" in response)
 
-The fixed code should:
-1. Correct the original error
-2. Maintain all existing functionality
-3. Follow best practices for the language
-{% endif %}
+    def parse_response(self, response: str):
+        result = {
+            "project": "",
+            "focus": "",
+            "plans": {},
+            "summary": ""
+        }
 
-Respond with JSON containing:
-- "analysis" (only for analysis step)
-- "solution" (detailed solution)
-- "fixed_code" (complete fixed code)
+        current_section = None
+        current_step = None
+
+        for line in response.split("\n"):
+            line = line.strip()
+
+            if line.startswith("Project Name:"):
+                current_section = "project"
+                result["project"] = line.split(":", 1)[1].strip()
+
+            elif line.startswith("Current Focus:"):
+                current_section = "focus"
+                result["focus"] = line.split(":", 1)[1].strip()
+
+            elif line.startswith("Plan:"):
+                current_section = "plans"
+
+            elif line.startswith("Summary:"):
+                current_section = "summary"
+                result["summary"] = line.split(":", 1)[1].strip()
+
+            elif current_section == "plans":
+                if line.startswith("- [ ] Step"):
+                    step_no = int(line.split(":")[0].split(" ")[-1])
+                    current_step = step_no
+                    result["plans"][step_no] = line.split(":", 1)[1].strip()
+                elif current_step:
+                    result["plans"][current_step] += " " + line
+
+            elif current_section == "summary":
+                result["summary"] += " " + line.replace("```", "")
+
+        result["project"] = result["project"].strip()
+        result["focus"] = result["focus"].strip()
+        result["summary"] = result["summary"].strip()
+
+        return result
+
+    def execute(self, project_name: str, description: str):
+        prompt = self.render(project_name, description)
+        response = self.llm.inference(prompt)
+
+        if not self.validate_response(response):
+            raise ValueError("Invalid project planning response")
+
+        return self.parse_response(response)

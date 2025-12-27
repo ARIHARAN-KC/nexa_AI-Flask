@@ -24,6 +24,12 @@ from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
+import logging
+
+# Initialize logger
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -514,13 +520,16 @@ def workspace():
     if not session.get('config'):
         flash('Please configure your settings first', 'warning')
         return redirect(url_for('configure'))
+    
     profile_pic_url = url_for('uploaded_file', filename=current_user.profile_picture) if current_user.profile_picture else None
     selected_model = session['config'].get('model', 'Gemini-Pro')
+    
     return render_template('workspace.html', profile_pic_url=profile_pic_url, selected_model=selected_model)
 
 @app.route('/api/process', methods=['POST'])
 @login_required
 def process_prompt():
+    """Processes user prompt for conversation, coding, or project planning in a streaming response."""
     if not session.get('config'):
         return jsonify({'error': 'Please configure your settings first'}), 400
 
@@ -538,11 +547,12 @@ def process_prompt():
                 yield json.dumps({
                     'type': 'error',
                     'error': 'User not authenticated',
-                    'content': 'Sorry, you need to be logged in to process this request.',
+                    'content': 'Please log in to continue.',
                     'status': 'Error occurred'
                 }) + "\n"
                 return
 
+            # Initialize conversation
             conversation = Conversation(
                 user_id=user_id,
                 messages=[{'role': 'user', 'content': prompt, 'type': 'conversation'}]
@@ -550,246 +560,145 @@ def process_prompt():
             db.session.add(conversation)
             db.session.commit()
 
+            # -------------------------
+            # Step 1: Decision
+            # -------------------------
+            decision = None
             try:
                 decision_taker = DecisionTaker(config['model'], config['api_key'])
-                decision = decision_taker.execute(prompt)[0]
+                decision_list = decision_taker.execute(prompt)
+                decision = decision_list[0] if decision_list else None
+            except Exception as e:
+                logger.error("DecisionTaker failed: %s", e)
 
-                conversation.messages = conversation.messages + [{
+            if not decision:
+                decision = {'function': 'ordinary_conversation', 'reply': "I couldn't analyze the prompt fully."}
+
+            # Step 2: Handle ordinary conversation
+            if decision['function'] == 'ordinary_conversation':
+                conversation.messages.append({
                     'role': 'assistant',
-                    'content': "I'm analyzing your request...",
+                    'content': decision['reply'],
                     'type': 'conversation'
-                }]
+                })
                 db.session.commit()
                 yield json.dumps({
                     'type': 'conversation',
-                    'content': "I'm analyzing your request...",
-                    'status': 'Starting analysis'
+                    'content': decision['reply'],
+                    'status': 'Conversation complete'
+                }) + "\n"
+                return
+
+            # Step 3: Handle coding project
+            if decision['function'] == 'coding_project':
+                yield json.dumps({
+                    'type': 'conversation',
+                    'content': "Starting project planning...",
+                    'status': 'Planning started'
                 }) + "\n"
 
-                if decision['function'] == 'ordinary_conversation':
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': decision['reply'],
-                        'type': 'conversation'
-                    }]
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'conversation',
-                        'content': decision['reply'],
-                        'status': 'Conversation complete'
-                    }) + "\n"
-                    return
-
-                elif decision['function'] == 'coding_project':
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': "Starting project planning...",
-                        'type': 'conversation'
-                    }]
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'conversation',
-                        'content': "Starting project planning...",
-                        'status': 'Planning started'
-                    }) + "\n"
-
+                # Planner
+                try:
                     planner = Planner(config['model'], config['api_key'])
-                    generated_plan = planner.execute(prompt)
-                    model_reply, planner_json = planner.parse_response(generated_plan)
+                    model_reply, planner_json = planner.execute(prompt)
+                except Exception as e:
+                    logger.error("Planner failed: %s", e)
+                    planner_json = {}
+                    model_reply = "Planner failed"
 
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': "Here's the project plan I've created:",
-                        'type': 'planner',
-                        'data': planner_json
-                    }]
-                    conversation.project_name = planner_json.get('project', 'Untitled Project')
-                    conversation.project_plan = planner_json
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'planner',
-                        'plan': planner_json,
-                        'content': "Here's the project plan I've created:",
-                        'status': 'Planning completed'
-                    }) + "\n"
+                yield json.dumps({
+                    'type': 'planner',
+                    'plan': planner_json,
+                    'content': "Project plan generated.",
+                    'status': 'Planning completed'
+                }) + "\n"
 
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': "Extracting key concepts for research...",
-                        'type': 'conversation'
-                    }]
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'conversation',
-                        'content': "Extracting key concepts for research...",
-                        'status': 'Extracting keywords'
-                    }) + "\n"
-
+                # Keyword extraction
+                try:
                     keyword_extractor = SentenceBert()
                     keywords = keyword_extractor.extract_keywords(prompt)
+                except Exception as e:
+                    logger.error("Keyword extraction failed: %s", e)
+                    keywords = []
 
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': f"Key concepts identified: {', '.join(keywords)}",
-                        'type': 'keywords',
-                        'data': keywords
-                    }]
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'keywords',
-                        'keywords': keywords,
-                        'content': f"Key concepts identified: {', '.join(keywords)}",
-                        'status': 'Keywords extracted'
-                    }) + "\n"
+                yield json.dumps({
+                    'type': 'keywords',
+                    'keywords': keywords,
+                    'content': f"Key concepts identified: {', '.join(keywords)}",
+                    'status': 'Keywords extracted'
+                }) + "\n"
 
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': "Researching relevant information...",
-                        'type': 'conversation'
-                    }]
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'conversation',
-                        'content': "Researching relevant information...",
-                        'status': 'Research started'
-                    }) + "\n"
-
+                # Research
+                try:
                     researcher = Researcher(config['model'], config['api_key'])
-                    researcher_output = researcher.execute(
-                        generated_plan[generated_plan.index("Plan"):generated_plan.rindex("Summary")],
-                        keywords
-                    )
+                    researcher_output = researcher.execute(planner_json.get("plans", {}), keywords)
+                except Exception as e:
+                    logger.error("Researcher failed: %s", e)
+                    researcher_output = {"queries": [], "ask_user": ""}
 
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': "Research completed. Here's what I found:",
-                        'type': 'researcher',
-                        'data': researcher_output
-                    }]
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'researcher',
-                        'keywords': keywords,
-                        'research': researcher_output,
-                        'content': "Research completed. Here's what I found:",
-                        'status': 'Research completed'
-                    }) + "\n"
+                yield json.dumps({
+                    'type': 'researcher',
+                    'research': researcher_output,
+                    'content': "Research completed.",
+                    'status': 'Research completed'
+                }) + "\n"
 
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': "Gathering detailed information...",
-                        'type': 'conversation'
-                    }]
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'conversation',
-                        'content': "Gathering detailed information...",
-                        'status': 'Executing queries'
-                    }) + "\n"
+                # Search queries
+                try:
+                    queries_result = search_queries(researcher_output.get("queries", []))
+                    # Ensure dict for Coder
+                    if not isinstance(queries_result, dict):
+                        queries_result = {q: "" for q in researcher_output.get("queries", [])}
+                except Exception as e:
+                    logger.error("Search queries failed: %s", e)
+                    queries_result = {}
 
-                    queries_result = search_queries(researcher_output["queries"])
-
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': "Starting to write the code...",
-                        'type': 'conversation'
-                    }]
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'conversation',
-                        'content': "Starting to write the code...",
-                        'status': 'Coding started'
-                    }) + "\n"
-
+                # Code generation
+                try:
                     coder = Coder(config['model'], config['api_key'])
-                    coder_output = coder.execute(
-                        generated_plan[generated_plan.index("Plan"):generated_plan.rindex("Summary")],
-                        prompt,
-                        queries_result
-                    )
+                    coder_output = coder.execute(planner_json.get("plans", {}), prompt, queries_result)
+                    if not isinstance(coder_output, list):
+                        coder_output = []
+                except Exception as e:
+                    logger.error("Coder failed: %s", e)
+                    coder_output = []
 
-                    print("Coder output:", json.dumps(coder_output, indent=2))
+                yield json.dumps({
+                    'type': 'coder',
+                    'code': coder_output,
+                    'content': "Code generation completed!",
+                    'status': 'Coding completed'
+                }) + "\n"
 
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': "Code generation completed!",
-                        'type': 'coder',
-                        'data': coder_output
-                    }]
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'coder',
-                        'code': coder_output,
-                        'content': "Code generation completed!",
-                        'status': 'Coding completed'
-                    }) + "\n"
-
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': "Finalizing the project...",
-                        'type': 'conversation'
-                    }]
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'conversation',
-                        'content': "Finalizing the project...",
-                        'status': 'Creating project'
-                    }) + "\n"
-
+                # Project creation
+                try:
                     files = prepare_coding_files(coder_output)
                     project_creator = ProjectCreator(config['model'], config['api_key'])
-                    project_output = project_creator.execute(planner_json["project"], files)
+                    project_output = project_creator.execute(planner_json.get("project", "Untitled Project"), files)
+                except Exception as e:
+                    logger.error("Project creation failed: %s", e)
+                    project_output = {}
 
-                    print("Project output:", json.dumps(project_output, indent=2))
-
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': "Project successfully created!",
-                        'type': 'project',
-                        'data': project_output
-                    }]
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'project',
-                        'plan': planner_json,
-                        'keywords': keywords,
-                        'research': researcher_output,
-                        'queries_results': queries_result,
-                        'code': coder_output,
-                        'project': project_output,
-                        'content': "Project successfully created!",
-                        'status': 'Project completed'
-                    }) + "\n"
-
-                    conversation.messages = conversation.messages + [{
-                        'role': 'assistant',
-                        'content': "You can now download your project files.",
-                        'type': 'conversation'
-                    }]
-                    db.session.commit()
-                    yield json.dumps({
-                        'type': 'conversation',
-                        'content': "You can now download your project files.",
-                        'status': 'Ready for download'
-                    }) + "\n"
-
-            except Exception as e:
-                error_msg = f"Sorry, I encountered an error: {str(e)}"
-                print(f"Error in process_prompt: {str(e)}")
-                conversation.messages = conversation.messages + [{
-                    'role': 'assistant',
-                    'content': error_msg,
-                    'type': 'error'
-                }]
-                db.session.commit()
                 yield json.dumps({
-                    'type': 'error',
-                    'error': str(e),
-                    'content': error_msg,
-                    'status': 'Error occurred'
+                    'type': 'project',
+                    'plan': planner_json,
+                    'keywords': keywords,
+                    'research': researcher_output,
+                    'queries_results': queries_result,
+                    'code': coder_output,
+                    'project': project_output,
+                    'content': "Project successfully created!",
+                    'status': 'Project completed'
+                }) + "\n"
+
+                yield json.dumps({
+                    'type': 'conversation',
+                    'content': "You can now download your project files.",
+                    'status': 'Ready for download'
                 }) + "\n"
 
     return Response(generate(), mimetype='application/json')
+
 
 @app.route('/api/download_project', methods=['POST'])
 @login_required
@@ -804,8 +713,7 @@ def download_project():
             directories = set()
             
             for file_data in data['code']:
-                file_path = file_data['file'].strip()
-                file_path = file_data['file'].replace('\\', '/').strip('/')
+                file_path = clean_file_path(file_data['file'])
                 
                 if not file_path:
                     print(f"Skipping empty file path: {file_data['file']}")
@@ -836,6 +744,7 @@ def download_project():
     except Exception as e:
         print(f"Error: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/billing', methods=['GET'])
 @login_required
@@ -1005,14 +914,82 @@ def manage_conversation(id):
         return jsonify({'error': str(e)}), 500
 
 
-# Add these routes after your existing routes
 @app.route('/ide')
 @login_required
 def ide():
     """Standalone IDE page"""
     profile_pic_url = url_for('uploaded_file', filename=current_user.profile_picture) if current_user.profile_picture else None
+    
+    # Initialize user files in session if not exists
+    if 'user_files' not in session:
+        session['user_files'] = {}
+    
+    # Try to load workspace project automatically
+    try:
+        conversation = Conversation.query.filter_by(
+            user_id=current_user.id
+        ).order_by(Conversation.timestamp.desc()).first()
+        
+        if conversation and not session['user_files']:
+            # Load project files if available
+            load_workspace_project_internal(current_user.id)
+    except Exception as e:
+        print(f"Auto-load warning: {str(e)}")
+    
     return render_template('nexaIde.html', profile_pic_url=profile_pic_url)
 
+def load_workspace_project_internal(user_id):
+    """Internal function to load workspace project into session"""
+    try:
+        conversation = Conversation.query.filter_by(
+            user_id=user_id
+        ).order_by(Conversation.timestamp.desc()).first()
+        
+        if not conversation:
+            return False
+        
+        user_files = {}
+        files_loaded = 0
+        
+        # Extract files from conversation messages
+        for message in conversation.messages:
+            if message.get('type') in ['coder', 'project'] and message.get('data'):
+                data = message['data']
+                
+                # Handle different data formats
+                if isinstance(data, list):
+                    for item in data:
+                        if isinstance(item, dict) and item.get('file') and item.get('code'):
+                            file_path = clean_file_path(item['file'])
+                            user_files[file_path] = {
+                                'content': item['code'],
+                                'last_modified': datetime.utcnow().isoformat(),
+                                'user_id': user_id
+                            }
+                            files_loaded += 1
+                
+                elif isinstance(data, dict) and data.get('code'):
+                    for item in data['code']:
+                        if isinstance(item, dict) and item.get('file') and item.get('code'):
+                            file_path = clean_file_path(item['file'])
+                            user_files[file_path] = {
+                                'content': item['code'],
+                                'last_modified': datetime.utcnow().isoformat(),
+                                'user_id': user_id
+                            }
+                            files_loaded += 1
+        
+        if user_files:
+            session['user_files'] = user_files
+            session.modified = True
+            return True
+        
+        return False
+        
+    except Exception as e:
+        print(f"Error in internal project load: {str(e)}")
+        return False
+    
 @app.route('/api/ide/save_file', methods=['POST'])
 @login_required
 def save_ide_file():
@@ -1060,6 +1037,94 @@ def load_ide_files():
     
     except Exception as e:
         print(f"Error loading IDE files: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ide/files', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@login_required
+def manage_ide_files():
+    """Unified endpoint for file CRUD operations"""
+    try:
+        if request.method == 'GET':
+            # Get all files
+            user_files = session.get('user_files', {})
+            return jsonify({
+                'files': user_files,
+                'count': len(user_files)
+            })
+        
+        elif request.method == 'POST':
+            # Create new file
+            data = request.get_json()
+            file_path = data.get('file_path')
+            content = data.get('content', '')
+            
+            if not file_path:
+                return jsonify({'error': 'File path is required'}), 400
+            
+            # Validate file path
+            if any(char in file_path for char in ['..', '~']):
+                return jsonify({'error': 'Invalid file path'}), 400
+            
+            user_files = session.get('user_files', {})
+            user_files[file_path] = {
+                'content': content,
+                'last_modified': datetime.utcnow().isoformat(),
+                'user_id': current_user.id
+            }
+            session['user_files'] = user_files
+            session.modified = True
+            
+            return jsonify({
+                'message': 'File created successfully',
+                'file_path': file_path,
+                'last_modified': user_files[file_path]['last_modified']
+            })
+        
+        elif request.method == 'PUT':
+            # Update file
+            data = request.get_json()
+            file_path = data.get('file_path')
+            content = data.get('content')
+            
+            if not file_path or content is None:
+                return jsonify({'error': 'File path and content are required'}), 400
+            
+            user_files = session.get('user_files', {})
+            if file_path not in user_files:
+                return jsonify({'error': 'File not found'}), 404
+            
+            user_files[file_path] = {
+                'content': content,
+                'last_modified': datetime.utcnow().isoformat(),
+                'user_id': current_user.id
+            }
+            session['user_files'] = user_files
+            session.modified = True
+            
+            return jsonify({
+                'message': 'File updated successfully',
+                'file_path': file_path,
+                'last_modified': user_files[file_path]['last_modified']
+            })
+        
+        elif request.method == 'DELETE':
+            # Delete file
+            data = request.get_json()
+            file_path = data.get('file_path')
+            
+            if not file_path:
+                return jsonify({'error': 'File path is required'}), 400
+            
+            user_files = session.get('user_files', {})
+            if file_path in user_files:
+                del user_files[file_path]
+                session['user_files'] = user_files
+                session.modified = True
+                return jsonify({'message': 'File deleted successfully'})
+            else:
+                return jsonify({'error': 'File not found'}), 404
+    
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
     
 @app.route('/api/ide/create_file', methods=['POST'])
@@ -1179,105 +1244,21 @@ def download_ide_file():
 def load_workspace_project():
     """Load the most recent workspace project into the IDE"""
     try:
-        # Get the most recent conversation with project data
-        conversation = Conversation.query.filter_by(
-            user_id=current_user.id
-        ).order_by(Conversation.timestamp.desc()).first()
+        success = load_workspace_project_internal(current_user.id)
         
-        if not conversation:
-            return jsonify({'error': 'No project data found. Please create a project in the workspace first.'}), 404
-        
-        print(f"Found conversation: {conversation.id}, Project: {conversation.project_name}")
-        
-        user_files = {}
-        files_loaded = 0
-        
-        # Method 1: Extract from coder data - handle both list and dict formats
-        for message in conversation.messages:
-            if message.get('type') == 'coder' and message.get('data'):
-                coder_data = message['data']
-                print(f"Coder data type: {type(coder_data)}")
-                print(f"Coder data: {coder_data}")
-                
-                # Handle list format
-                if isinstance(coder_data, list):
-                    for file_item in coder_data:
-                        if isinstance(file_item, dict):
-                            file_path = file_item.get('file')
-                            file_code = file_item.get('code')
-                            
-                            if file_path and file_code is not None:
-                                file_path = clean_file_path(file_path)
-                                user_files[file_path] = {
-                                    'content': file_code,
-                                    'last_modified': datetime.utcnow().isoformat(),
-                                    'user_id': current_user.id
-                                }
-                                files_loaded += 1
-                                print(f"Loaded from coder list: {file_path}")
-                
-                # Handle dict format with 'code' key containing list
-                elif isinstance(coder_data, dict) and coder_data.get('code'):
-                    for file_item in coder_data['code']:
-                        if isinstance(file_item, dict):
-                            file_path = file_item.get('file')
-                            file_code = file_item.get('code')
-                            
-                            if file_path and file_code is not None:
-                                file_path = clean_file_path(file_path)
-                                user_files[file_path] = {
-                                    'content': file_code,
-                                    'last_modified': datetime.utcnow().isoformat(),
-                                    'user_id': current_user.id
-                                }
-                                files_loaded += 1
-                                print(f"Loaded from coder dict: {file_path}")
-        
-        # Method 2: Extract from project data
-        if not user_files:
-            for message in conversation.messages:
-                if message.get('type') == 'project' and message.get('data'):
-                    project_data = message['data']
-                    if isinstance(project_data, dict) and project_data.get('code'):
-                        for file_item in project_data['code']:
-                            if isinstance(file_item, dict) and file_item.get('file') and file_item.get('code'):
-                                file_path = clean_file_path(file_item['file'])
-                                user_files[file_path] = {
-                                    'content': file_item['code'],
-                                    'last_modified': datetime.utcnow().isoformat(),
-                                    'user_id': current_user.id
-                                }
-                                files_loaded += 1
-                                print(f"Loaded from project: {file_path}")
-        
-        # Method 3: Extract from conversation project_plan
-        if not user_files and conversation.project_plan:
-            # Create basic project structure from plan
-            project_name = conversation.project_name or "workspace_project"
-            user_files['README.md'] = {
-                'content': f"# {project_name}\n\n## Project Plan\n\n{json.dumps(conversation.project_plan, indent=2)}",
-                'last_modified': datetime.utcnow().isoformat(),
-                'user_id': current_user.id
-            }
-            files_loaded += 1
-        
-        if user_files:
-            session['user_files'] = user_files
-            session.modified = True
-            print(f"Session saved with {len(user_files)} files: {list(user_files.keys())}")  # Debug log
+        if success:
+            user_files = session.get('user_files', {})
             return jsonify({
-                'message': f'Loaded {files_loaded} files from workspace project',
+                'message': f'Loaded {len(user_files)} files from workspace project',
                 'files': user_files,
-                'count': files_loaded,
-                'project_name': conversation.project_name
+                'count': len(user_files)
             })
         else:
-            return jsonify({'error': 'No code files found in the workspace project. Create sample files in IDE.'}), 404  # Updated message
+            # Create sample project structure
+            return create_sample_project_structure()
             
     except Exception as e:
         print(f"Error loading workspace project: {str(e)}")
-        import traceback
-        traceback.print_exc()
         return jsonify({'error': f'Failed to load project: {str(e)}'}), 500
     
 def clean_file_path(file_path):
@@ -1419,6 +1400,40 @@ def create_fallback_files(conversation):
     except Exception as e:
         print(f"Error creating fallback files: {str(e)}")
         return jsonify({'error': 'No project files could be loaded or created'}), 404
+
+def create_sample_project_structure():
+    """Create sample project structure when no workspace project exists"""
+    try:
+        user_files = {
+            'README.md': {
+                'content': '# Welcome to Nexa IDE\n\n## Getting Started\n\n1. Create new files using the "New File" button\n2. Edit files in the code editor\n3. Save your work using Ctrl+S\n4. Use the terminal for file operations\n\n## Sample Project Structure\n\nThis is a sample project created for you to get started.',
+                'last_modified': datetime.utcnow().isoformat(),
+                'user_id': current_user.id
+            },
+            'main.py': {
+                'content': '#!/usr/bin/env python3\n"""\nMain application file\nCreated in Nexa IDE\n"""\n\nprint("Hello from Nexa IDE!")\n\nclass Project:\n    def __init__(self, name):\n        self.name = name\n    \n    def run(self):\n        print(f"Running {self.name}...")\n        return "Success!"\n\nif __name__ == "__main__":\n    project = Project("Nexa IDE Demo")\n    result = project.run()\n    print(f"Result: {result}")',
+                'last_modified': datetime.utcnow().isoformat(),
+                'user_id': current_user.id
+            },
+            'styles.css': {
+                'content': '/* Main stylesheet */\nbody {\n    font-family: Arial, sans-serif;\n    margin: 0;\n    padding: 20px;\n    background-color: #f5f5f5;\n}\n\n.container {\n    max-width: 1200px;\n    margin: 0 auto;\n    background: white;\n    padding: 20px;\n    border-radius: 8px;\n    box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n}',
+                'last_modified': datetime.utcnow().isoformat(),
+                'user_id': current_user.id
+            }
+        }
+        
+        session['user_files'] = user_files
+        session.modified = True
+        
+        return jsonify({
+            'message': 'Created sample project structure',
+            'files': user_files,
+            'count': len(user_files),
+            'sample': True
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to create sample project: {str(e)}'}), 500
     
 @app.route('/api/ide/export_project', methods=['POST'])
 @login_required

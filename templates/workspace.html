@@ -234,6 +234,7 @@
                 </div>
 
                 <!-- In the IDE tab content -->
+<!-- In the IDE tab content -->
 <div id="ide" class="tab-content h-full p-6 hidden">
     <div class="flex flex-col items-center justify-center h-full text-center text-gray-500 dark:text-gray-400 animate-fade-in">
         <div class="bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-900/20 dark:to-indigo-800/20 p-5 rounded-2xl mb-6 shadow-inner">
@@ -258,17 +259,27 @@
                 </svg>
                 Load Current Project to IDE
             </button>
+            
+            <button id="refresh-ide-files" class="bg-gradient-to-br from-blue-600 to-blue-500 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-600 transition-all shadow-md flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh Files
+            </button>
         </div>
 
-        <div class="mt-6 grid grid-cols-2 gap-4 w-full max-w-md">
-            <!-- ... existing feature boxes ... -->
+        <div class="mt-6 w-full max-w-md">
+            <h4 class="font-medium mb-3 text-gray-800 dark:text-white">Recent Files</h4>
+            <div id="recent-files-list" class="bg-white dark:bg-gray-800 rounded-lg p-4 max-h-40 overflow-y-auto">
+                <!-- Recent files will be populated here -->
+                <p class="text-gray-500 dark:text-gray-400 text-sm">No recent files</p>
+            </div>
         </div>
     </div>
 </div>
             </div>
         </div>
     </div>
-</div>
 
 <!-- Include Prism.js for syntax highlighting -->
 <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />

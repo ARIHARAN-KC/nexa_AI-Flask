@@ -1,45 +1,120 @@
 import json
+import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 from jinja2 import Environment, BaseLoader
 from src.llm import LLM
 
-decision_prompt = open("src/agents/decision_taker/prompt.jinja2").read().strip()
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 
 class DecisionTaker:
-    def __init__(self, base_model, api_key) -> None:
+    """
+    Determines the optimal function chain required to fulfill
+    a user's code-related request.
+    """
+
+    REQUIRED_KEYS = {"function", "args", "reply"}
+
+    def __init__(self, base_model: str, api_key: str) -> None:
         self.llm = LLM(base_model, api_key)
-        self.max_retries = 5  # Maximum number of retry attempts
+        self.max_retries = 5
+        self.prompt_template = self._load_prompt()
 
-    def render(self, prompt: str) -> str:
-        env = Environment(loader=BaseLoader())
-        template = env.from_string(decision_prompt)
-        return template.render(prompt=prompt)
+    # -------------------------
+    # Internal helpers
+    # -------------------------
 
-    def validate_response(self, response):
-        response = response.strip().replace("```json", "```")
-        if response.startswith("```") and response.endswith("```"):
-            response = response[3:-3].strip()
+    def _load_prompt(self) -> str:
+        path = Path("src/agents/decision_taker/prompt.jinja2")
+        if not path.exists():
+            raise FileNotFoundError(f"Prompt file not found: {path}")
+        return path.read_text(encoding="utf-8").strip()
+
+    def _call_llm(self, prompt: str) -> str:
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                return self.llm.inference(prompt)
+            except Exception as exc:
+                logger.warning(
+                    "DecisionTaker LLM failed (attempt %s/%s): %s",
+                    attempt,
+                    self.max_retries,
+                    exc
+                )
+        raise RuntimeError("DecisionTaker LLM failed after max retries")
+
+    def _extract_json(self, text: str) -> Optional[List[Dict[str, Any]]]:
+        """
+        Safely extract JSON array from LLM output.
+        """
+        text = text.strip()
+
+        # Remove fenced blocks if present
+        if text.startswith("```"):
+            text = text.replace("```json", "```").strip("`").strip()
 
         try:
-            response = json.loads(response)
-        except Exception as _:
-            return False
+            data = json.loads(text)
+            if isinstance(data, list):
+                return data
+        except json.JSONDecodeError:
+            return None
 
-        for item in response:
-            if "function" not in item or "args" not in item or "reply" not in item:
-                return False
+        return None
 
-        return response
+    # -------------------------
+    # Rendering
+    # -------------------------
 
-    def execute(self, prompt, retry_count=0):
-        if retry_count >= self.max_retries:
-            raise RuntimeError("Max retries reached for DecisionTaker")
+    def render(self, user_prompt: str) -> str:
+        env = Environment(loader=BaseLoader())
+        template = env.from_string(self.prompt_template)
+        return template.render(prompt=user_prompt)
 
-        rendered_prompt = self.render(prompt)
-        response = self.llm.inference(rendered_prompt)
-        valid_response = self.validate_response(response)
+    # -------------------------
+    # Validation
+    # -------------------------
 
-        if not valid_response:
-            print("The Decision Taker has made an error, trying again...\n")
-            return self.execute(prompt, retry_count + 1)
+    def validate_response(
+        self, response: str
+    ) -> Optional[List[Dict[str, Any]]]:
+        data = self._extract_json(response)
+        if not data:
+            return None
 
-        return valid_response
+        for item in data:
+            if not self.REQUIRED_KEYS.issubset(item.keys()):
+                logger.error("Invalid decision item schema: %s", item)
+                return None
+
+            if not isinstance(item["args"], dict):
+                logger.error("Args must be an object: %s", item)
+                return None
+
+        return data
+
+    # -------------------------
+    # Execution
+    # -------------------------
+
+    def execute(self, prompt: str) -> List[Dict[str, Any]]:
+        """
+        Execute the decision-making process.
+        """
+        for attempt in range(1, self.max_retries + 1):
+            logger.info("DecisionTaker attempt %s/%s", attempt, self.max_retries)
+
+            rendered_prompt = self.render(prompt)
+            response = self._call_llm(rendered_prompt)
+            valid = self.validate_response(response)
+
+            if valid:
+                logger.info("DecisionTaker produced valid response")
+                return valid
+
+            logger.warning("Invalid decision response, retrying...")
+
+        raise RuntimeError("DecisionTaker failed after maximum retries")

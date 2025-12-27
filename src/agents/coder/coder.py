@@ -1,122 +1,214 @@
-
 import re
 import json
+import logging
+from pathlib import Path
+from typing import List, Dict, Optional
+
 from jinja2 import Environment, BaseLoader
 from src.llm import LLM
 
-coder_prompt = open("src/agents/coder/prompt.jinja2").read().strip()
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 
 class Coder:
-    def __init__(self, base_model, api_key):
-        self.llm = LLM(base_model, api_key)
-        self.code_block_pattern = re.compile(r"```(?:\w+\n)?(.*?)```", re.DOTALL)
-        self.filename_pattern = re.compile(r"^(?:file|filename):\s*([^\n]+)", re.IGNORECASE)
+    """
+    Generates complete multi-file projects based on user instructions.
+    Handles malformed LLM output gracefully and validates requested pages.
+    """
 
-    def render(self, step_by_step_plan, user_prompt, search_results):
+    def __init__(self, base_model: str, api_key: str):
+        self.llm = LLM(base_model, api_key)
+
+        self.code_block_pattern = re.compile(
+            r"```(?:\w+)?\n(.*?)```",
+            re.DOTALL
+        )
+
+        self.filename_pattern = re.compile(
+            r"^file\s*:\s*`?([^`\n]+)`?",
+            re.IGNORECASE
+        )
+
+        self.prompt_template = self._load_prompt()
+        self.max_retries = 3
+
+    # -------------------------
+    # Internal helpers
+    # -------------------------
+
+    def _load_prompt(self) -> str:
+        path = Path("src/agents/coder/prompt.jinja2")
+        if not path.exists():
+            raise FileNotFoundError(f"Prompt not found: {path}")
+        return path.read_text(encoding="utf-8").strip()
+
+    def _call_llm(self, prompt: str) -> str:
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                return self.llm.inference(prompt)
+            except Exception as exc:
+                logger.warning(
+                    "LLM failed (attempt %s/%s): %s",
+                    attempt,
+                    self.max_retries,
+                    exc
+                )
+        raise RuntimeError("LLM failed after max retries")
+
+    # -------------------------
+    # Rendering
+    # -------------------------
+
+    def render(self, step_by_step_plan: str, user_prompt: str, search_results: Dict) -> str:
         env = Environment(loader=BaseLoader())
-        template = env.from_string(coder_prompt)
+        template = env.from_string(self.prompt_template)
         return template.render(
             step_by_step_plan=step_by_step_plan,
             user_prompt=user_prompt,
-            search_results=search_results,
+            search_results=search_results
         )
 
-    def clean_filename(self, filename):
-        """Clean and normalize filenames, ensuring valid format and directory structure"""
+    # -------------------------
+    # Parsing & validation
+    # -------------------------
+
+    def clean_filename(self, filename: str) -> str:
         if not filename:
-            return "unnamed_file.txt"
-        filename = filename.strip().strip('"').strip("'").strip("`")
-        filename = filename.replace('\\', '/').strip('/')
-        # Remove invalid characters
+            return "src/unnamed_file.txt"
+
+        filename = filename.strip().strip("`'\"")
+        filename = filename.replace("\\", "/")
         filename = re.sub(r'[<>:"|?*]', '', filename)
-        # Detect flattened paths and attempt to fix
-        if '/' not in filename and filename not in ['README.md', 'package.json', '.gitignore']:
-            # Heuristic: Split camelCase or concatenated names
-            if 'model' in filename.lower():
-                filename = f"server/models/{filename}"
-            elif 'route' in filename.lower():
-                filename = f"server/routes/{filename}"
-            elif 'controller' in filename.lower():
-                filename = f"server/controllers/{filename}"
-            elif 'component' in filename.lower():
-                filename = f"client/src/components/{filename}"
-            else:
-                filename = f"src/{filename}"
+
+        if "/" not in filename:
+            filename = f"src/{filename}"
+
         return filename
 
-    def validate_response(self, response):
-        """Parse and validate LLM response, handling multiple code blocks and filenames"""
+    def parse_response(self, response: str) -> List[Dict[str, str]]:
+        """
+        Parse markdown-style multi-file output into structured files.
+        Handles missing code blocks or filenames gracefully.
+        """
+        files = []
         if not response or not response.strip():
-            return None
+            return files
 
-        result = []
+        lines = response.splitlines()
         current_file = None
         current_code = []
-        lines = response.split("\n")
         i = 0
 
         while i < len(lines):
             line = lines[i].strip()
 
-            # Check for filename marker
-            filename_match = self.filename_pattern.match(line)
-            if filename_match:
+            # Detect file declaration
+            file_match = self.filename_pattern.match(line)
+            if file_match:
                 if current_file and current_code:
-                    result.append({
+                    files.append({
                         "file": self.clean_filename(current_file),
-                        "code": "\n".join(current_code).strip()
+                        "code": "\n".join(current_code).rstrip()
                     })
-                current_file = filename_match.group(1)
+                current_file = file_match.group(1)
                 current_code = []
                 i += 1
                 continue
 
-            # Check for code block start
+            # Detect code blocks
             if line.startswith("```"):
-                code_block = []
                 i += 1
                 while i < len(lines) and not lines[i].strip().startswith("```"):
-                    code_block.append(lines[i])
+                    current_code.append(lines[i])
                     i += 1
-                if i < len(lines) and lines[i].strip().startswith("```"):
-                    i += 1  # Skip closing ```
-                if current_file:
-                    current_code.extend(code_block)
+                i += 1
                 continue
 
-            # Collect lines as code if we're in a file context
-            if current_file and line:
-                current_code.append(line)
             i += 1
 
-        # Save the last file
-        if current_file and current_code:
-            result.append({
+        # Append last file if exists
+        if current_file:
+            files.append({
                 "file": self.clean_filename(current_file),
-                "code": "\n".join(current_code).strip()
+                "code": "\n".join(current_code).rstrip() if current_code else ""
             })
 
-        # Filter out empty or invalid entries
-        result = [entry for entry in result if entry["file"] and entry["code"]]
+        # Always return a list
+        return files
 
-        # Log for debugging
-        print("Coder validate_response output:", json.dumps(result, indent=2))
+    # -------------------------
+    # Execution
+    # -------------------------
 
-        return result if result else None
+    def execute(
+        self,
+        step_by_step_plan: str,
+        user_prompt: str,
+        search_results: Dict
+    ) -> List[Dict[str, str]]:
 
-    def execute(self, step_by_step_plan: str, user_prompt: str, search_results: dict):
-        max_retries = 3
-        retries = 0
+        for attempt in range(1, self.max_retries + 1):
+            logger.info("Coder attempt %s/%s", attempt, self.max_retries)
 
-        while retries < max_retries:
             prompt = self.render(step_by_step_plan, user_prompt, search_results)
-            response = self.llm.inference(prompt)
-            valid_response = self.validate_response(response)
+            response = self._call_llm(prompt)
+            files = self.parse_response(response)
 
-            if valid_response:
-                return valid_response
+            if not files:
+                logger.warning("No files parsed from LLM output, retrying...")
+                continue
 
-            retries += 1
-            print(f"Invalid response from the model (attempt {retries}/{max_retries}): {response[:100]}...")
-            if retries == max_retries:
-                raise ValueError("Failed to get valid response after multiple attempts")
+            # Verify requested pages
+            if self._verify_all_pages_generated(files, user_prompt):
+                logger.info("All requested pages generated successfully")
+                return files
+            else:
+                logger.warning("Some requested pages are missing, retrying...")
+
+        # Return whatever was generated as fallback
+        logger.warning("Returning partial files after max retries")
+        return files
+
+    # -------------------------
+    # Page verification
+    # -------------------------
+
+    def _verify_all_pages_generated(self, files: List[Dict], user_prompt: str) -> bool:
+        requested = self._extract_requested_pages(user_prompt)
+        if not requested:
+            return True
+
+        filenames = " ".join(f["file"].lower() for f in files)
+        content = " ".join(f["code"].lower() for f in files)
+
+        missing = [
+            page for page in requested
+            if page not in filenames and page not in content
+        ]
+
+        if missing:
+            logger.warning("Missing pages: %s", missing)
+            return False
+
+        return True
+
+    def _extract_requested_pages(self, user_prompt: str) -> List[str]:
+        prompt = user_prompt.lower()
+        page_map = {
+            "home": ["home", "index", "landing"],
+            "login": ["login", "signin"],
+            "signup": ["signup", "register"],
+            "dashboard": ["dashboard"],
+            "filter": ["filter", "search", "sort"],
+            "admin": ["admin"],
+            "settings": ["settings"]
+        }
+
+        found = []
+        for page, keywords in page_map.items():
+            if any(k in prompt for k in keywords):
+                found.append(page)
+
+        logger.info("Requested pages detected: %s", found)
+        return found
