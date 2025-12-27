@@ -3,18 +3,16 @@
 > **Describe your idea in plain English. Get a complete software project — auto-generated.**  
 > Architecture, code, tests, documentation, and deployment setup — all created autonomously by AI.
 
-![Home](imgs/image.png)
-![Features](imgs/image-1.png)
-![Work flow](imgs/image-2.png)
-![AI integrations](imgs/image-3.png)
-![Projects](imgs/image-4.png)
-![Contact](imgs/image-5.png)
-![Configuration](imgs/image-6.png)
-![Workspace](imgs/image-7.png)
-![Planner Tab](imgs/image-8.png)
-![Coder Tab](imgs/image-9.png)
-![Project Tab](imgs/image-10.png)
-![Nexa IDE](imgs/image-11.png)
+![Home](screenshots/home.jpeg)
+![Features](screenshots/features.jpeg)
+![Workspace](screenshots/workspace.jpeg)
+![Configuration](screenshots/configure.jpeg)
+![Planner Tab](screenshots/planner.jpeg)
+![Coder Tab](screenshots/coder.jpeg)
+![Project Tab](screenshots/project.jpeg)
+![Researcher Tab](screenshots/researcher.jpeg)
+![Login](screenshots/login.jpeg)
+![Sign-Up](screenshots/sign-up.jpeg)
 ---
 
 ## Table of Contents
