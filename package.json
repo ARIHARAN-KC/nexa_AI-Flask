@@ -1,7 +1,20 @@
 {
+  "name": "nexa-ai-flask-main",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:s3": "tsc",
+    "init:s3": "node s3/dist/s3_setup.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1693.0",
+    "dotenv": "^17.2.3"
+  },
   "devDependencies": {
+    "@types/node": "^25.0.3",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
-    "tailwindcss": "^4.0.17"
+    "tailwindcss": "^4.0.17",
+    "typescript": "^5.9.3"
   }
 }

@@ -21,9 +21,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import json
 from urllib.parse import urlparse
-
+import subprocess,sys
 from dotenv import load_dotenv
-
+from s3.s3_client import allowed_file, get_profile_pic_url, upload_profile_picture, delete_profile_picture,upload_project_file,list_project_files,delete_project_file,get_project_file_content
 import logging
 
 # Initialize logger
@@ -34,7 +34,6 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') 
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 
 # PostgreSQL configuration
@@ -61,7 +60,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_recycle': 300,
     'pool_pre_ping': True,
 }
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5 MB
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -101,25 +100,32 @@ class ProfileForm(FlaskForm):
         DataRequired(),
         Length(min=2, max=20)
     ])
+
     email = StringField('Email', validators=[
-        DataRequired(), 
+        DataRequired(),
         Email()
     ])
+
     first_name = StringField('First Name', validators=[
         Optional(),
         Length(max=50)
     ])
+
     last_name = StringField('Last Name', validators=[
         Optional(),
         Length(max=50)
     ])
+
     bio = TextAreaField('Bio', validators=[
         Optional(),
         Length(max=500)
     ])
+
     profile_picture = FileField('Profile Picture', validators=[
+        Optional(),
         FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Images only!')
     ])
+
 
 class PaymentMethodForm(FlaskForm):
     card_number = StringField('Card Number', validators=[DataRequired(), Length(min=16, max=16)])
@@ -214,10 +220,6 @@ def load_user(user_id):
     except ValueError:
         session.pop('_user_id', None)
         return None
-
-# Utility Functions
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 # Routes
 @app.route('/')
@@ -335,70 +337,63 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-@app.route('/profile', methods=['GET', 'POST'])
+@app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
     form = ProfileForm()
-    
-    if request.method == 'GET':
-        form.username.data = current_user.username
-        form.email.data = current_user.email
-        form.first_name.data = current_user.first_name
-        form.last_name.data = current_user.last_name
-        form.bio.data = current_user.bio
-    
-    if form.validate_on_submit():
-        try:
-            existing_user = User.query.filter_by(username=form.username.data).first()
-            if existing_user and existing_user.id != current_user.id:
-                flash('Username already taken', 'error')
-                profile_pic_url = url_for('uploaded_file', filename=current_user.profile_picture) if current_user.profile_picture else None
-                return render_template('profile.html', form=form, profile_pic_url=profile_pic_url)
-            
-            existing_email = User.query.filter_by(email=form.email.data).first()
-            if existing_email and existing_email.id != current_user.id:
-                flash('Email already in use', 'error')
-                profile_pic_url = url_for('uploaded_file', filename=current_user.profile_picture) if current_user.profile_picture else None
-                return render_template('profile.html', form=form, profile_pic_url=profile_pic_url)
 
-            if 'remove_picture' in request.form and current_user.profile_picture:
-                old_filepath = os.path.join(app.config['UPLOAD_FOLDER'], current_user.profile_picture)
-                if os.path.exists(old_filepath):
-                    os.remove(old_filepath)
-                current_user.profile_picture = None
-            elif form.profile_picture.data:
-                file = form.profile_picture.data
-                if file and allowed_file(file.filename):
-                    if current_user.profile_picture:
-                        old_filepath = os.path.join(app.config['UPLOAD_FOLDER'], current_user.profile_picture)
-                        if os.path.exists(old_filepath):
-                            os.remove(old_filepath)
-                    filename = secure_filename(f"{current_user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{file.filename.rsplit('.', 1)[1].lower()}")
-                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-                    file.save(filepath)
-                    current_user.profile_picture = filename
-            
+    if form.validate_on_submit():
+
+        try:
+            file = request.files.get("profile_picture")
+
+            if request.form.get("remove_picture") == "1":
+                if current_user.profile_picture:
+                    delete_profile_picture(current_user.profile_picture)
+                    current_user.profile_picture = None
+
+            # UPLOAD PROFILE PICTURE
+            elif file and file.filename:
+                # Debug size (IMPORTANT)
+                file.stream.seek(0, os.SEEK_END)
+                size = file.stream.tell()
+                file.stream.seek(0)
+                print(f"Processing file upload: {file.filename}, size: {size}")
+
+                if size == 0:
+                    raise ValueError("Uploaded file is empty")
+
+                filename = upload_profile_picture(file, current_user.id)
+
+                # Delete old pic
+                if current_user.profile_picture:
+                    delete_profile_picture(current_user.profile_picture)
+
+                current_user.profile_picture = filename
+
+            # Update other fields
             current_user.username = form.username.data
             current_user.email = form.email.data
             current_user.first_name = form.first_name.data
             current_user.last_name = form.last_name.data
             current_user.bio = form.bio.data
-            
+
             db.session.commit()
-            flash('Profile updated successfully!', 'success')
-            return redirect(url_for('profile'))
-        
+            flash("Profile updated successfully", "success")
+
         except Exception as e:
-            db.session.rollback()
-            flash(f'Error updating profile: {str(e)}', 'error')
-    
-    profile_pic_url = url_for('uploaded_file', filename=current_user.profile_picture) if current_user.profile_picture else None
-    return render_template('profile.html', form=form, profile_pic_url=profile_pic_url)
+            print("Upload error:", e)
+            flash(str(e), "danger")
+
+        return redirect(url_for("profile"))
+
+    profile_pic_url = get_profile_pic_url(current_user.profile_picture)
+
+    return render_template(
+        "profile.html",
+        form=form,
+        profile_pic_url=profile_pic_url,
+    )
 
 @app.route('/api_key_form', methods=['GET', 'POST'])
 @login_required
@@ -452,36 +447,34 @@ def delete_account():
 @login_required
 def account_settings():
     form = AccountSettingsForm()
-    
+
     if request.method == 'GET':
         form.project_updates.data = current_user.project_updates
         form.security_alerts.data = current_user.security_alerts
         form.two_factor.data = current_user.two_factor_enabled
-    
+
     if form.validate_on_submit():
         try:
             if form.current_password.data and form.new_password.data:
                 if not check_password_hash(current_user.password, form.current_password.data):
                     flash('Current password is incorrect', 'error')
-                    profile_pic_url = url_for('uploaded_file', filename=current_user.profile_picture) if current_user.profile_picture else None
-                    return render_template('account_settings.html', form=form, profile_pic_url=profile_pic_url)
+                    return render_template('account_settings.html', form=form, profile_pic_url=get_profile_pic_url(current_user.profile_picture))
                 current_user.password = generate_password_hash(form.new_password.data)
                 flash('Password updated successfully!', 'success')
-            
+
             current_user.project_updates = form.project_updates.data
             current_user.security_alerts = form.security_alerts.data
             current_user.two_factor_enabled = form.two_factor.data
-            
+
             db.session.commit()
             flash('Account settings updated successfully!', 'success')
             return redirect(url_for('account_settings'))
-        
+
         except Exception as e:
             db.session.rollback()
             flash(f'Error updating account settings: {str(e)}', 'error')
-    
-    profile_pic_url = url_for('uploaded_file', filename=current_user.profile_picture) if current_user.profile_picture else None
-    return render_template('account_settings.html', form=form, profile_pic_url=profile_pic_url)
+
+    return render_template('account_settings.html', form=form, profile_pic_url=get_profile_pic_url(current_user.profile_picture))
 
 @app.route('/configure', methods=['GET', 'POST'])
 @login_required
@@ -521,7 +514,7 @@ def workspace():
         flash('Please configure your settings first', 'warning')
         return redirect(url_for('configure'))
     
-    profile_pic_url = url_for('uploaded_file', filename=current_user.profile_picture) if current_user.profile_picture else None
+    profile_pic_url = get_profile_pic_url(current_user.profile_picture) if current_user.profile_picture else None
     selected_model = session['config'].get('model', 'Gemini-Pro')
     
     return render_template('workspace.html', profile_pic_url=profile_pic_url, selected_model=selected_model)
@@ -917,213 +910,108 @@ def manage_conversation(id):
 @app.route('/ide')
 @login_required
 def ide():
-    """Standalone IDE page"""
-    profile_pic_url = url_for('uploaded_file', filename=current_user.profile_picture) if current_user.profile_picture else None
-    
-    # Initialize user files in session if not exists
-    if 'user_files' not in session:
-        session['user_files'] = {}
-    
-    # Try to load workspace project automatically
-    try:
-        conversation = Conversation.query.filter_by(
-            user_id=current_user.id
-        ).order_by(Conversation.timestamp.desc()).first()
-        
-        if conversation and not session['user_files']:
-            # Load project files if available
-            load_workspace_project_internal(current_user.id)
-    except Exception as e:
-        print(f"Auto-load warning: {str(e)}")
-    
+    profile_pic_url = (
+        get_profile_pic_url(current_user.profile_picture)
+        if current_user.profile_picture else None
+    )
+
+    # Just render IDE — frontend will fetch files from S3
     return render_template('nexaIde.html', profile_pic_url=profile_pic_url)
 
 def load_workspace_project_internal(user_id):
-    """Internal function to load workspace project into session"""
-    try:
-        conversation = Conversation.query.filter_by(
-            user_id=user_id
-        ).order_by(Conversation.timestamp.desc()).first()
-        
-        if not conversation:
-            return False
-        
-        user_files = {}
-        files_loaded = 0
-        
-        # Extract files from conversation messages
-        for message in conversation.messages:
-            if message.get('type') in ['coder', 'project'] and message.get('data'):
-                data = message['data']
-                
-                # Handle different data formats
-                if isinstance(data, list):
-                    for item in data:
-                        if isinstance(item, dict) and item.get('file') and item.get('code'):
-                            file_path = clean_file_path(item['file'])
-                            user_files[file_path] = {
-                                'content': item['code'],
-                                'last_modified': datetime.utcnow().isoformat(),
-                                'user_id': user_id
-                            }
-                            files_loaded += 1
-                
-                elif isinstance(data, dict) and data.get('code'):
-                    for item in data['code']:
-                        if isinstance(item, dict) and item.get('file') and item.get('code'):
-                            file_path = clean_file_path(item['file'])
-                            user_files[file_path] = {
-                                'content': item['code'],
-                                'last_modified': datetime.utcnow().isoformat(),
-                                'user_id': user_id
-                            }
-                            files_loaded += 1
-        
-        if user_files:
-            session['user_files'] = user_files
-            session.modified = True
-            return True
-        
-        return False
-        
-    except Exception as e:
-        print(f"Error in internal project load: {str(e)}")
-        return False
+    """
+    Check if user has any project files in S3
+    """
+    files = list_project_files(user_id)
+    return bool(files)
     
 @app.route('/api/ide/save_file', methods=['POST'])
 @login_required
 def save_ide_file():
-    try:
-        data = request.get_json()
-        file_path = data.get('file_path')
-        content = data.get('content')
-        
-        if not file_path or content is None:
-            return jsonify({'error': 'File path and content are required'}), 400
-        
-        # Store file in user's session or database
-        user_files = session.get('user_files', {})
-        user_files[file_path] = {
-            'content': content,
-            'last_modified': datetime.utcnow().isoformat(),
-            'user_id': current_user.id
-        }
-        session['user_files'] = user_files
-        
-        # In a production environment, you might want to save to database or filesystem
-        # For now, we'll use session storage
-        
-        return jsonify({
-            'message': 'File saved successfully', 
-            'file_path': file_path,
-            'last_modified': user_files[file_path]['last_modified']
-        })
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    data = request.get_json()
+    file_path = data.get("file_path")
+    content = data.get("content")
+
+    project_id = session.get("config", {}).get("project_name", "default_project")
+
+    upload_project_file(
+        user_id=current_user.id,
+        project_id=project_id,
+        file_path=file_path,
+        content=content
+    )
+
+    return jsonify({"message": "File saved"})
 
 @app.route('/api/ide/load_files', methods=['GET'])
 @login_required
 def load_ide_files():
-    try:
-        # First try to load from session
-        user_files = session.get('user_files', {})
-        
-        print(f"Loaded {len(user_files)} files from session")
-        
-        # If no files in session, provide empty response
-        # The frontend will handle loading workspace project separately
-        return jsonify({'files': user_files})
-    
-    except Exception as e:
-        print(f"Error loading IDE files: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+    project_id = session.get("config", {}).get("project_name", "default_project")
+
+    files = list_project_files(
+        user_id=current_user.id,
+        project_id=project_id
+    )
+
+    return jsonify({"files": files})
 
 @app.route('/api/ide/files', methods=['GET', 'POST', 'PUT', 'DELETE'])
 @login_required
 def manage_ide_files():
-    """Unified endpoint for file CRUD operations"""
     try:
         if request.method == 'GET':
-            # Get all files
-            user_files = session.get('user_files', {})
+            files = list_project_files(current_user.id)
             return jsonify({
-                'files': user_files,
-                'count': len(user_files)
+                'files': files,
+                'count': len(files)
             })
-        
+
         elif request.method == 'POST':
-            # Create new file
             data = request.get_json()
             file_path = data.get('file_path')
             content = data.get('content', '')
-            
+
             if not file_path:
                 return jsonify({'error': 'File path is required'}), 400
-            
-            # Validate file path
-            if any(char in file_path for char in ['..', '~']):
+
+            if any(x in file_path for x in ['..', '~']):
                 return jsonify({'error': 'Invalid file path'}), 400
-            
-            user_files = session.get('user_files', {})
-            user_files[file_path] = {
-                'content': content,
-                'last_modified': datetime.utcnow().isoformat(),
-                'user_id': current_user.id
-            }
-            session['user_files'] = user_files
-            session.modified = True
-            
+
+            upload_project_file(file_path, content, current_user.id)
+
             return jsonify({
                 'message': 'File created successfully',
                 'file_path': file_path,
-                'last_modified': user_files[file_path]['last_modified']
+                'last_modified': datetime.utcnow().isoformat()
             })
-        
+
         elif request.method == 'PUT':
-            # Update file
             data = request.get_json()
             file_path = data.get('file_path')
             content = data.get('content')
-            
+
             if not file_path or content is None:
                 return jsonify({'error': 'File path and content are required'}), 400
-            
-            user_files = session.get('user_files', {})
-            if file_path not in user_files:
-                return jsonify({'error': 'File not found'}), 404
-            
-            user_files[file_path] = {
-                'content': content,
-                'last_modified': datetime.utcnow().isoformat(),
-                'user_id': current_user.id
-            }
-            session['user_files'] = user_files
-            session.modified = True
-            
+
+            upload_project_file(file_path, content, current_user.id)
+
             return jsonify({
                 'message': 'File updated successfully',
                 'file_path': file_path,
-                'last_modified': user_files[file_path]['last_modified']
+                'last_modified': datetime.utcnow().isoformat()
             })
-        
+
         elif request.method == 'DELETE':
-            # Delete file
             data = request.get_json()
             file_path = data.get('file_path')
-            
+
             if not file_path:
                 return jsonify({'error': 'File path is required'}), 400
-            
-            user_files = session.get('user_files', {})
-            if file_path in user_files:
-                del user_files[file_path]
-                session['user_files'] = user_files
-                session.modified = True
-                return jsonify({'message': 'File deleted successfully'})
-            else:
-                return jsonify({'error': 'File not found'}), 404
-    
+
+            delete_project_file(file_path, current_user.id)
+
+            return jsonify({'message': 'File deleted successfully'})
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
@@ -1161,52 +1049,47 @@ def create_ide_file():
 @app.route('/api/ide/delete_file', methods=['POST'])
 @login_required
 def delete_ide_file():
-    try:
-        data = request.get_json()
-        file_path = data.get('file_path')
-        
-        if not file_path:
-            return jsonify({'error': 'File path is required'}), 400
-        
-        user_files = session.get('user_files', {})
-        if file_path in user_files:
-            del user_files[file_path]
-            session['user_files'] = user_files
-        
-        return jsonify({'message': 'File deleted successfully'})
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    data = request.get_json()
+    file_path = data.get("file_path")
+    project_id = session.get("config", {}).get("project_name")
+
+    delete_project_file(
+        current_user.id,
+        project_id,
+        file_path
+    )
+
+    return jsonify({"message": "File deleted"})
 
 @app.route('/api/ide/rename_file', methods=['POST'])
 @login_required
 def rename_ide_file():
-    try:
-        data = request.get_json()
-        old_path = data.get('old_path')
-        new_path = data.get('new_path')
-        
-        if not old_path or not new_path:
-            return jsonify({'error': 'Both old and new file paths are required'}), 400
-        
-        # Validate new file name
-        if any(char in new_path for char in ['/', '\\', '..']):
-            return jsonify({'error': 'Invalid file name'}), 400
-        
-        user_files = session.get('user_files', {})
-        if old_path in user_files:
-            user_files[new_path] = user_files[old_path]
-            user_files[new_path]['last_modified'] = datetime.utcnow().isoformat()
-            del user_files[old_path]
-            session['user_files'] = user_files
-        
-        return jsonify({
-            'message': 'File renamed successfully',
-            'new_path': new_path
-        })
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    data = request.get_json()
+    old_path = data["old_path"]
+    new_path = data["new_path"]
+    project_id = session.get("config", {}).get("project_name")
+
+    content = get_project_file_content(
+        current_user.id,
+        project_id,
+        old_path
+    )
+
+    upload_project_file(
+        current_user.id,
+        project_id,
+        new_path,
+        content
+    )
+
+    delete_project_file(
+        current_user.id,
+        project_id,
+        old_path
+    )
+
+    return jsonify({"message": "Renamed successfully"})
+
 
 @app.route('/api/ide/download_file', methods=['POST'])
 @login_required
@@ -1242,24 +1125,20 @@ def download_ide_file():
 @app.route('/api/ide/load_workspace_project', methods=['POST'])
 @login_required
 def load_workspace_project():
-    """Load the most recent workspace project into the IDE"""
     try:
-        success = load_workspace_project_internal(current_user.id)
-        
-        if success:
-            user_files = session.get('user_files', {})
+        files = list_project_files(current_user.id)
+
+        if files:
             return jsonify({
-                'message': f'Loaded {len(user_files)} files from workspace project',
-                'files': user_files,
-                'count': len(user_files)
+                'message': f'Loaded {len(files)} files from workspace',
+                'files': files,
+                'count': len(files)
             })
-        else:
-            # Create sample project structure
-            return create_sample_project_structure()
-            
+
+        return create_sample_project_structure()
+
     except Exception as e:
-        print(f"Error loading workspace project: {str(e)}")
-        return jsonify({'error': f'Failed to load project: {str(e)}'}), 500
+        return jsonify({'error': str(e)}), 500
     
 def clean_file_path(file_path):
     """Clean and normalize file path"""
@@ -1438,32 +1317,26 @@ def create_sample_project_structure():
 @app.route('/api/ide/export_project', methods=['POST'])
 @login_required
 def export_ide_project():
-    try:
-        data = request.get_json()
-        files = data.get('files', {})
-        
-        if not files:
-            return jsonify({'error': 'No files to export'}), 400
-        
-        # Create zip file in memory
-        memory_file = io.BytesIO()
-        with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
-            for file_path, file_data in files.items():
-                zf.writestr(file_path, file_data.get('content', ''))
-        
-        memory_file.seek(0)
-        
-        return send_file(
-            memory_file,
-            mimetype='application/zip',
-            as_attachment=True,
-            download_name='nexa_ide_project.zip'
-        )
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    project_id = session.get("config", {}).get("project_name")
 
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    files = list_project_files(
+        current_user.id,
+        project_id
+    )
+
+    memory_file = io.BytesIO()
+    with zipfile.ZipFile(memory_file, 'w') as zf:
+        for path, data in files.items():
+            zf.writestr(path, data["content"])
+
+    memory_file.seek(0)
+
+    return send_file(
+        memory_file,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name=f"{project_id}.zip"
+    )
 
 # Initialize database
 with app.app_context():
@@ -1474,8 +1347,23 @@ with app.app_context():
         print(f"Error creating database tables: {e}")
         print("You may need to create the tables manually in your PostgreSQL database")
 
+#S3 setup
+def run_s3_setup():
+    try:
+        print("Running S3 setup...")
+        subprocess.run(
+            ["yarn", "init:s3"],
+            check=True,
+            shell=True
+        )
+        print("S3 initialized")
+    except subprocess.CalledProcessError as e:
+        print("S3 setup failed")
+        sys.exit(1)
+
 # Run the application
 if __name__ == "__main__":
+    run_s3_setup() #s3 setup
     port = int(os.environ.get("PORT", 5000))
     print(f"Starting server on port {port}")
     app.run(host="0.0.0.0", port=port, debug=False)

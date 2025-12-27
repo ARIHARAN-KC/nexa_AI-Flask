@@ -13,4 +13,4 @@ instance/
 .DS_Store
 .vscode/
 *.sqlite3
-
+s3/dist/

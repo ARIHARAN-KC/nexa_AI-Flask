@@ -1,4 +1,3 @@
-
 // -------------------------------
 // IDE State
 // -------------------------------
@@ -32,20 +31,16 @@ const languageMap = {
 // -------------------------------
 // Init
 // -------------------------------
-document.addEventListener('DOMContentLoaded', () => {
-    initializeIDE();
+document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
-    loadProjectFromSession() || loadWorkspaceProject();
-});
 
-async function initializeIDE() {
-    try {
-        const serverFiles = await loadFilesFromServer();
-        ideState.files = serverFiles || {};
-    } catch (_) {}
+    if (!loadProjectFromSession()) {
+        await loadWorkspaceProject();
+    }
+
     updateFileExplorer();
     showEditorOverlay();
-}
+});
 
 // -------------------------------
 // Event Binding
@@ -53,8 +48,7 @@ async function initializeIDE() {
 function setupEventListeners() {
     document.getElementById('save-file').onclick = saveCurrentFile;
     document.getElementById('new-file').onclick = createNewFile;
-    document.getElementById('new-folder').onclick = createNewFolder;
-    document.getElementById('refresh-explorer').onclick = updateFileExplorer;
+    document.getElementById('refresh-explorer').onclick = reloadFiles;
     document.getElementById('clear-terminal').onclick = clearTerminal;
 
     document.getElementById('code-editor')
@@ -70,6 +64,50 @@ function handleKeyboardShortcuts(e) {
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         saveCurrentFile();
+    }
+}
+
+// -------------------------------
+// Backend → Frontend Normalization
+// -------------------------------
+function normalizeServerFiles(serverFiles) {
+    const normalized = {};
+
+    Object.entries(serverFiles || {}).forEach(([path, data]) => {
+        normalized[path] = {
+            name: path.split('/').pop(),
+            path,
+            content: data.content || '',
+            language: detectLanguage(path),
+            lastModified: data.last_modified || new Date().toISOString()
+        };
+    });
+
+    return normalized;
+}
+
+// -------------------------------
+// File Loading
+// -------------------------------
+async function reloadFiles() {
+    const res = await fetch('/api/ide/files');
+    const data = await res.json();
+    ideState.files = normalizeServerFiles(data.files);
+    updateFileExplorer();
+}
+
+async function loadWorkspaceProject() {
+    const res = await fetch('/api/ide/load_workspace_project', {
+        method: 'POST'
+    });
+    const data = await res.json();
+
+    if (data.files) {
+        ideState.files = normalizeServerFiles(data.files);
+        updateFileExplorer();
+
+        const firstFile = Object.keys(ideState.files)[0];
+        if (firstFile) openFile(firstFile);
     }
 }
 
@@ -92,7 +130,6 @@ function openFile(filePath) {
     document.getElementById('file-language').textContent = file.language;
 
     updateEditorTabs();
-    updateFileExplorer();
     hideEditorOverlay();
 }
 
@@ -100,7 +137,15 @@ async function saveCurrentFile() {
     if (!ideState.activeFile) return;
 
     const content = document.getElementById('code-editor').value;
-    await saveFileToServer(ideState.activeFile, content);
+
+    await fetch('/api/ide/files', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            file_path: ideState.activeFile,
+            content
+        })
+    });
 
     ideState.files[ideState.activeFile].content = content;
     ideState.unsavedChanges.delete(ideState.activeFile);
@@ -110,64 +155,32 @@ async function saveCurrentFile() {
     addTerminalOutput(`Saved ${ideState.activeFile}`);
 }
 
-// -------------------------------
-// Server API
-// -------------------------------
-async function loadFilesFromServer() {
-    const res = await fetch('/api/ide/files');
-    const data = await res.json();
-    return data.files || {};
-}
-
-async function saveFileToServer(filePath, content) {
-    const res = await fetch('/api/ide/files', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file_path: filePath, content })
-    });
-    if (!res.ok) throw new Error('Save failed');
-}
-
-async function createFileOnServer(filePath, content) {
-    await fetch('/api/ide/files', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file_path: filePath, content })
-    });
-}
-
-async function deleteFileOnServer(filePath) {
-    await fetch('/api/ide/files', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file_path: filePath })
-    });
-}
-
-// -------------------------------
-// Create / Delete / Rename
-// -------------------------------
 async function createNewFile() {
     const name = prompt('File name:');
     if (!name) return;
 
-    await createFileOnServer(name, '');
-    ideState.files[name] = {
-        name,
-        path: name,
-        content: '',
-        language: detectLanguage(name),
-        lastModified: new Date().toISOString()
-    };
+    await fetch('/api/ide/files', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            file_path: name,
+            content: ''
+        })
+    });
 
-    updateFileExplorer();
+    await reloadFiles();
     openFile(name);
 }
 
 async function deleteFile(filePath) {
     if (!confirm(`Delete ${filePath}?`)) return;
 
-    await deleteFileOnServer(filePath);
+    await fetch('/api/ide/files', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file_path: filePath })
+    });
+
     ideState.unsavedChanges.delete(filePath);
     ideState.openFiles = ideState.openFiles.filter(f => f !== filePath);
     delete ideState.files[filePath];
@@ -181,19 +194,6 @@ async function deleteFile(filePath) {
     updateFileExplorer();
 }
 
-function renameFile(oldPath) {
-    const newName = prompt('New name:', ideState.files[oldPath].name);
-    if (!newName) return;
-
-    const folder = oldPath.includes('/') ? oldPath.split('/').slice(0, -1).join('/') + '/' : '';
-    const newPath = folder + newName;
-
-    ideState.files[newPath] = { ...ideState.files[oldPath], name: newName, path: newPath };
-    delete ideState.files[oldPath];
-
-    updateFileExplorer();
-}
-
 // -------------------------------
 // Editor State
 // -------------------------------
@@ -201,7 +201,6 @@ function handleEditorChange() {
     if (!ideState.activeFile) return;
     ideState.unsavedChanges.add(ideState.activeFile);
     updateEditorTabs();
-    updateFileExplorer();
 }
 
 // -------------------------------
@@ -250,10 +249,6 @@ function renderFileTree(tree) {
 function bindExplorerEvents() {
     document.querySelectorAll('.file-item').forEach(el => {
         el.onclick = () => openFile(el.dataset.path);
-        el.oncontextmenu = e => {
-            e.preventDefault();
-            showFileContextMenu(e, el.dataset.path);
-        };
     });
 }
 
@@ -274,7 +269,8 @@ function updateEditorTabs() {
     tabs.querySelectorAll('.editor-tab').forEach(tab => {
         tab.onclick = e => {
             if (e.target.classList.contains('close')) {
-                deleteFile(tab.dataset.file);
+                ideState.openFiles = ideState.openFiles.filter(f => f !== tab.dataset.file);
+                updateEditorTabs();
             } else {
                 openFile(tab.dataset.file);
             }
@@ -334,6 +330,7 @@ function saveProjectToSession() {
 function loadProjectFromSession() {
     const data = sessionStorage.getItem('nexa_ide_project');
     if (!data) return false;
+
     Object.assign(ideState, JSON.parse(data));
     updateFileExplorer();
     ideState.activeFile && openFile(ideState.activeFile);
@@ -342,4 +339,4 @@ function loadProjectFromSession() {
 
 setInterval(saveProjectToSession, 30000);
 
-console.log('Nexa IDE loaded');
+console.log('Nexa IDE fully loaded');
