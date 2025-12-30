@@ -8,7 +8,7 @@ project_creator_planner_prompt = open(
 
 class ProjectCreator:
     def __init__(self, base_model, api_key):
-        self.llm = LLM(base_model, api_key)
+        self.llm = LLM(base_model, api_key, agent_name="project_creator")
 
     def render(self, project_name, description):
         env = Environment(loader=BaseLoader())

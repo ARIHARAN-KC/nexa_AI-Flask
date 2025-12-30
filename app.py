@@ -1,4 +1,4 @@
-from flask import Flask, json, render_template, request, jsonify, send_file, session, redirect, url_for, flash, Response, send_from_directory
+from flask import Flask, json, render_template, request, jsonify, send_file, session, redirect, url_for, flash, Response, send_from_directory,stream_with_context
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import FlaskForm
@@ -16,14 +16,14 @@ import os
 import zipfile
 import io
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, UTC
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import json
 from urllib.parse import urlparse
 import subprocess,sys
 from dotenv import load_dotenv
-from s3.s3_client import allowed_file, get_profile_pic_url, upload_profile_picture, delete_profile_picture,upload_project_file,list_project_files,delete_project_file,get_project_file_content
+from s3.s3_client import allowed_file, get_profile_pic_url, upload_profile_picture, delete_profile_picture,upload_project_file,list_project_files,delete_project_file,get_project_file_content,save_full_project
 import logging
 
 # Initialize logger
@@ -174,7 +174,7 @@ class Subscription(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     plan = db.Column(db.String(50), nullable=False, default='Free')
-    start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    start_date = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
     end_date = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(20), nullable=False, default='Active')
 
@@ -186,7 +186,7 @@ class PaymentMethod(db.Model):
     card_type = db.Column(db.String(50), nullable=False)
     last_four = db.Column(db.String(4), nullable=False)
     expiry_date = db.Column(db.String(5), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
 
 class BillingHistory(db.Model):
     __tablename__ = 'billing_history'
@@ -195,7 +195,7 @@ class BillingHistory(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     description = db.Column(db.String(200), nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.DateTime, nullable=False, default=datetime.now(UTC))
     invoice_id = db.Column(db.String(100), nullable=True)
 
 class Conversation(db.Model):
@@ -203,10 +203,29 @@ class Conversation(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
     messages = db.Column(db.JSON, nullable=False)
     project_name = db.Column(db.String(100), nullable=True)
     project_plan = db.Column(db.JSON, nullable=True)
+
+class Project(db.Model):
+    __tablename__ = "projects"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    name = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+
+    s3_prefix = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
+    updated_at = db.Column(
+    db.DateTime,
+    default=lambda: datetime.now(UTC),
+    onupdate=lambda: datetime.now(UTC)
+)
+
+    conversation_id = db.Column(db.Integer, db.ForeignKey("conversations.id"), nullable=True)
 
 # Initialize login manager
 login_manager = LoginManager()
@@ -250,16 +269,6 @@ def terms_of_service():
 def cookie_policy():
     return render_template('cookie_policy.html')
 
-@app.route('/history')
-@login_required
-def history():
-    try:
-        conversations = Conversation.query.filter_by(user_id=current_user.id).order_by(Conversation.timestamp.desc()).all()
-        return render_template('history.html', history_items=conversations)
-    except Exception as e:
-        flash(f'Error loading history: {str(e)}', 'error')
-        return render_template('history.html', history_items=[])
-
 @app.route('/examples')
 def examples():
     return render_template('examples.html')
@@ -283,6 +292,32 @@ def blog():
 @app.route('/community')
 def community():
     return render_template('community.html')
+
+@app.route("/api/workspace/load_project", methods=["POST"])
+@login_required
+def load_workspace_project():
+    data = request.get_json()
+    project_name = data.get("project_name")
+
+    if not project_name:
+        return jsonify({"error": "Project name required"}), 400
+
+    files = list_project_files(
+        user_id=current_user.id,
+        project_id=project_name
+    )
+
+    if not files:
+        return jsonify({"error": "Project not found"}), 404
+
+    # Store active project in session
+    session["active_project"] = project_name
+    session.modified = True
+
+    return jsonify({
+        "project": project_name,
+        "files": files
+    })
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -513,11 +548,30 @@ def workspace():
     if not session.get('config'):
         flash('Please configure your settings first', 'warning')
         return redirect(url_for('configure'))
-    
-    profile_pic_url = get_profile_pic_url(current_user.profile_picture) if current_user.profile_picture else None
+
+    profile_pic_url = (
+        get_profile_pic_url(current_user.profile_picture)
+        if current_user.profile_picture else None
+    )
+
     selected_model = session['config'].get('model', 'Gemini-Pro')
-    
-    return render_template('workspace.html', profile_pic_url=profile_pic_url, selected_model=selected_model)
+
+    last_project = (
+        Project.query
+        .filter_by(user_id=current_user.id)
+        .order_by(Project.updated_at.desc())
+        .first()
+    )
+
+    if last_project:
+        session["active_project"] = last_project.name
+        session.modified = True
+
+    return render_template(
+        'workspace.html',
+        profile_pic_url=profile_pic_url,
+        selected_model=selected_model
+    )
 
 @app.route('/api/process', methods=['POST'])
 @login_required
@@ -545,29 +599,40 @@ def process_prompt():
                 }) + "\n"
                 return
 
+            # -------------------------
             # Initialize conversation
+            # -------------------------
             conversation = Conversation(
                 user_id=user_id,
-                messages=[{'role': 'user', 'content': prompt, 'type': 'conversation'}]
+                messages=[{
+                    'role': 'user',
+                    'content': prompt,
+                    'type': 'conversation'
+                }]
             )
             db.session.add(conversation)
             db.session.commit()
 
             # -------------------------
-            # Step 1: Decision
+            # Decision
             # -------------------------
-            decision = None
             try:
                 decision_taker = DecisionTaker(config['model'], config['api_key'])
                 decision_list = decision_taker.execute(prompt)
                 decision = decision_list[0] if decision_list else None
             except Exception as e:
                 logger.error("DecisionTaker failed: %s", e)
+                decision = None
 
             if not decision:
-                decision = {'function': 'ordinary_conversation', 'reply': "I couldn't analyze the prompt fully."}
+                decision = {
+                    'function': 'ordinary_conversation',
+                    'reply': "I couldn't analyze the prompt fully."
+                }
 
-            # Step 2: Handle ordinary conversation
+            # -------------------------
+            # Ordinary conversation
+            # -------------------------
             if decision['function'] == 'ordinary_conversation':
                 conversation.messages.append({
                     'role': 'assistant',
@@ -582,15 +647,13 @@ def process_prompt():
                 }) + "\n"
                 return
 
-            # Step 3: Handle coding project
+            # -------------------------
+            # Coding/project flow
+            # -------------------------
             if decision['function'] == 'coding_project':
-                yield json.dumps({
-                    'type': 'conversation',
-                    'content': "Starting project planning...",
-                    'status': 'Planning started'
-                }) + "\n"
+                yield json.dumps({'type': 'conversation', 'content': "Starting project planning..."}) + "\n"
 
-                # Planner
+                # -------- Planner --------
                 try:
                     planner = Planner(config['model'], config['api_key'])
                     model_reply, planner_json = planner.execute(prompt)
@@ -599,14 +662,9 @@ def process_prompt():
                     planner_json = {}
                     model_reply = "Planner failed"
 
-                yield json.dumps({
-                    'type': 'planner',
-                    'plan': planner_json,
-                    'content': "Project plan generated.",
-                    'status': 'Planning completed'
-                }) + "\n"
+                yield json.dumps({'type': 'planner', 'plan': planner_json, 'content': "Project plan generated."}) + "\n"
 
-                # Keyword extraction
+                # -------- Keywords --------
                 try:
                     keyword_extractor = SentenceBert()
                     keywords = keyword_extractor.extract_keywords(prompt)
@@ -614,14 +672,9 @@ def process_prompt():
                     logger.error("Keyword extraction failed: %s", e)
                     keywords = []
 
-                yield json.dumps({
-                    'type': 'keywords',
-                    'keywords': keywords,
-                    'content': f"Key concepts identified: {', '.join(keywords)}",
-                    'status': 'Keywords extracted'
-                }) + "\n"
+                yield json.dumps({'type': 'keywords', 'keywords': keywords, 'content': f"Key concepts: {', '.join(keywords)}"}) + "\n"
 
-                # Research
+                # -------- Research --------
                 try:
                     researcher = Researcher(config['model'], config['api_key'])
                     researcher_output = researcher.execute(planner_json.get("plans", {}), keywords)
@@ -629,24 +682,18 @@ def process_prompt():
                     logger.error("Researcher failed: %s", e)
                     researcher_output = {"queries": [], "ask_user": ""}
 
-                yield json.dumps({
-                    'type': 'researcher',
-                    'research': researcher_output,
-                    'content': "Research completed.",
-                    'status': 'Research completed'
-                }) + "\n"
+                yield json.dumps({'type': 'researcher', 'research': researcher_output, 'content': "Research completed."}) + "\n"
 
-                # Search queries
+                # -------- Search --------
                 try:
                     queries_result = search_queries(researcher_output.get("queries", []))
-                    # Ensure dict for Coder
                     if not isinstance(queries_result, dict):
-                        queries_result = {q: "" for q in researcher_output.get("queries", [])}
+                        queries_result = {}
                 except Exception as e:
                     logger.error("Search queries failed: %s", e)
                     queries_result = {}
 
-                # Code generation
+                # -------- Code generation --------
                 try:
                     coder = Coder(config['model'], config['api_key'])
                     coder_output = coder.execute(planner_json.get("plans", {}), prompt, queries_result)
@@ -656,14 +703,9 @@ def process_prompt():
                     logger.error("Coder failed: %s", e)
                     coder_output = []
 
-                yield json.dumps({
-                    'type': 'coder',
-                    'code': coder_output,
-                    'content': "Code generation completed!",
-                    'status': 'Coding completed'
-                }) + "\n"
+                yield json.dumps({'type': 'coder', 'code': coder_output, 'content': "Code generation completed!"}) + "\n"
 
-                # Project creation
+                # -------- Project creation --------
                 try:
                     files = prepare_coding_files(coder_output)
                     project_creator = ProjectCreator(config['model'], config['api_key'])
@@ -672,6 +714,30 @@ def process_prompt():
                     logger.error("Project creation failed: %s", e)
                     project_output = {}
 
+                # -------------------------
+                # Save project (DB + S3)
+                # -------------------------
+                try:
+                    project_name = planner_json.get("project") or session["config"].get("project_name") or f"project-{conversation.id}"
+                    project = Project(user_id=user_id, name=project_name, s3_prefix=f"projects/{user_id}/{project_name}/", conversation_id=conversation.id)
+                    db.session.add(project)
+                    db.session.commit()
+
+                    for file_path, content in project_output.get("files", {}).items():
+                        upload_project_file(user_id=user_id, project_id=project_name, file_path=file_path, content=content)
+
+                    save_full_project(user_id=user_id, project_id=project_name, files={}, metadata={
+                        "project_name": project_name,
+                        "model": config["model"],
+                        "created_at": datetime.now(UTC).isoformat(),
+                        "conversation_id": conversation.id
+                    })
+                    session["active_project"] = project_name
+                    session.modified = True
+                except Exception as e:
+                    logger.error("Saving project failed: %s", e)
+
+                # -------- Final response --------
                 yield json.dumps({
                     'type': 'project',
                     'plan': planner_json,
@@ -680,18 +746,12 @@ def process_prompt():
                     'queries_results': queries_result,
                     'code': coder_output,
                     'project': project_output,
-                    'content': "Project successfully created!",
-                    'status': 'Project completed'
+                    'content': "Project successfully created!"
                 }) + "\n"
 
-                yield json.dumps({
-                    'type': 'conversation',
-                    'content': "You can now download your project files.",
-                    'status': 'Ready for download'
-                }) + "\n"
+                yield json.dumps({'type': 'conversation', 'content': "You can now open this project in the IDE."}) + "\n"
 
-    return Response(generate(), mimetype='application/json')
-
+    return Response(stream_with_context(generate()), mimetype='application/json')
 
 @app.route('/api/download_project', methods=['POST'])
 @login_required
@@ -779,7 +839,7 @@ def update_subscription():
         new_subscription = Subscription(
             user_id=current_user.id,
             plan=plan,
-            start_date=datetime.utcnow()
+            start_date=datetime.now(UTC)
         )
         db.session.add(new_subscription)
 
@@ -859,53 +919,50 @@ def get_billing_history():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/history', methods=['GET', 'DELETE'])
+@app.route("/history")
 @login_required
-def manage_history():
-    try:
-        if request.method == 'GET':
-            conversations = Conversation.query.filter_by(user_id=current_user.id).order_by(Conversation.timestamp.desc()).all()
-            history_data = [
-                {
-                    'id': conv.id,
-                    'timestamp': conv.timestamp.strftime('%Y-%m-%d %H:%M'),
-                    'messages': conv.messages,
-                    'project_name': conv.project_name,
-                    'project_plan': conv.project_plan
-                }
-                for conv in conversations
-            ]
-            return jsonify(history_data)
-        elif request.method == 'DELETE':
-            Conversation.query.filter_by(user_id=current_user.id).delete()
-            db.session.commit()
-            return jsonify({'message': 'All history cleared'})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+def history():
+    history_items = (
+        Conversation.query
+        .filter_by(user_id=current_user.id)
+        .order_by(Conversation.timestamp.desc())
+        .all()
+    )
 
-@app.route('/api/history/<int:id>', methods=['GET', 'DELETE'])
+    return render_template(
+        "history.html",
+        history_items=history_items
+    )
+
+@app.route('/api/history/<int:conversation_id>', methods=['GET', 'DELETE'])
 @login_required
-def manage_conversation(id):
-    try:
-        conversation = Conversation.query.filter_by(id=id, user_id=current_user.id).first()
-        if not conversation:
-            return jsonify({'error': 'Conversation not found'}), 404
+def manage_conversation(conversation_id):
+    conversation = Conversation.query.filter_by(
+        id=conversation_id,
+        user_id=current_user.id
+    ).first_or_404()
 
-        if request.method == 'GET':
-            return jsonify({
-                'id': conversation.id,
-                'timestamp': conversation.timestamp.strftime('%Y-%m-%d %H:%M'),
-                'messages': conversation.messages,
-                'project_name': conversation.project_name,
-                'project_plan': conversation.project_plan
-            })
-        elif request.method == 'DELETE':
-            db.session.delete(conversation)
-            db.session.commit()
-            return jsonify({'message': 'Conversation deleted'})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    # GET → Load conversation into workspace
+    if request.method == 'GET':
+        return jsonify({
+            'id': conversation.id,
+            'timestamp': conversation.timestamp.strftime('%Y-%m-%d %H:%M'),
+            'messages': conversation.messages,
+            'project_name': conversation.project_name,
+            'project_plan': conversation.project_plan
+        })
 
+    # DELETE → Delete one conversation
+    db.session.delete(conversation)
+    db.session.commit()
+    return jsonify({'message': 'Conversation deleted'}), 204
+
+@app.route("/api/history", methods=["DELETE"])
+@login_required
+def clear_history():
+    Conversation.query.filter_by(user_id=current_user.id).delete()
+    db.session.commit()
+    return jsonify({'message': 'All history cleared'}), 204
 
 @app.route('/ide')
 @login_required
@@ -918,30 +975,27 @@ def ide():
     # Just render IDE — frontend will fetch files from S3
     return render_template('nexaIde.html', profile_pic_url=profile_pic_url)
 
-def load_workspace_project_internal(user_id):
+def load_workspace_project_internal(user_id, project_id):
     """
     Check if user has any project files in S3
     """
-    files = list_project_files(user_id)
+    files = list_project_files(user_id, project_id)
     return bool(files)
     
-@app.route('/api/ide/save_file', methods=['POST'])
+@app.route("/api/ide/save_file", methods=["POST"])
 @login_required
 def save_ide_file():
     data = request.get_json()
-    file_path = data.get("file_path")
-    content = data.get("content")
-
-    project_id = session.get("config", {}).get("project_name", "default_project")
 
     upload_project_file(
         user_id=current_user.id,
-        project_id=project_id,
-        file_path=file_path,
-        content=content
+        project_id=session["active_project"],
+        file_path=data["file_path"],
+        content=data["content"]
     )
 
-    return jsonify({"message": "File saved"})
+    return jsonify({"message": "Saved"})
+
 
 @app.route('/api/ide/load_files', methods=['GET'])
 @login_required
@@ -982,7 +1036,7 @@ def manage_ide_files():
             return jsonify({
                 'message': 'File created successfully',
                 'file_path': file_path,
-                'last_modified': datetime.utcnow().isoformat()
+                'last_modified': datetime.now(UTC).isoformat()
             })
 
         elif request.method == 'PUT':
@@ -998,7 +1052,7 @@ def manage_ide_files():
             return jsonify({
                 'message': 'File updated successfully',
                 'file_path': file_path,
-                'last_modified': datetime.utcnow().isoformat()
+                'last_modified': datetime.now(UTC).isoformat()
             })
 
         elif request.method == 'DELETE':
@@ -1033,7 +1087,7 @@ def create_ide_file():
         user_files = session.get('user_files', {})
         user_files[file_name] = {
             'content': content,
-            'last_modified': datetime.utcnow().isoformat(),
+            'last_modified':datetime.now(UTC).isoformat(),
             'user_id': current_user.id
         }
         session['user_files'] = user_files
@@ -1051,7 +1105,7 @@ def create_ide_file():
 def delete_ide_file():
     data = request.get_json()
     file_path = data.get("file_path")
-    project_id = session.get("config", {}).get("project_name")
+    project_id = session.get("active_project")
 
     delete_project_file(
         current_user.id,
@@ -1122,23 +1176,23 @@ def download_ide_file():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/ide/load_workspace_project', methods=['POST'])
-@login_required
-def load_workspace_project():
-    try:
-        files = list_project_files(current_user.id)
+# @app.route('/api/ide/load_workspace_project', methods=['POST'])
+# @login_required
+# def load_workspace_project():
+#     try:
+#         files = list_project_files(current_user.id)
 
-        if files:
-            return jsonify({
-                'message': f'Loaded {len(files)} files from workspace',
-                'files': files,
-                'count': len(files)
-            })
+#         if files:
+#             return jsonify({
+#                 'message': f'Loaded {len(files)} files from workspace',
+#                 'files': files,
+#                 'count': len(files)
+#             })
 
-        return create_sample_project_structure()
+#         return create_sample_project_structure()
 
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
     
 def clean_file_path(file_path):
     """Clean and normalize file path"""
@@ -1203,7 +1257,7 @@ def extract_files_from_conversation_text(conversation):
                             file_content = '\n'.join(current_content)
                             user_files[current_file] = {
                                 'content': file_content,
-                                'last_modified': datetime.utcnow().isoformat(),
+                                'last_modified': datetime.now(UTC).isoformat(),
                                 'user_id': current_user.id
                             }
                             files_loaded += 1
@@ -1256,14 +1310,14 @@ def create_fallback_files(conversation):
         # Create a basic README
         user_files['README.md'] = {
             'content': f"# {project_name}\n\nProject created in Nexa Workspace.\n\n## Description\n\nThis project was automatically generated from your workspace conversation.\n\n## Next Steps\n\n1. Add your code files\n2. Customize this README\n3. Start coding!",
-            'last_modified': datetime.utcnow().isoformat(),
+            'last_modified': datetime.now(UTC).isoformat(),
             'user_id': current_user.id
         }
         
         # Create a basic Python file
         user_files['main.py'] = {
             'content': f'#!/usr/bin/env python3\n"""\n{project_name}\nGenerated from Nexa Workspace\n"""\n\nprint("Hello from {project_name}!")\n',
-            'last_modified': datetime.utcnow().isoformat(),
+            'last_modified': datetime.now(UTC).isoformat(),
             'user_id': current_user.id
         }
         
@@ -1286,17 +1340,17 @@ def create_sample_project_structure():
         user_files = {
             'README.md': {
                 'content': '# Welcome to Nexa IDE\n\n## Getting Started\n\n1. Create new files using the "New File" button\n2. Edit files in the code editor\n3. Save your work using Ctrl+S\n4. Use the terminal for file operations\n\n## Sample Project Structure\n\nThis is a sample project created for you to get started.',
-                'last_modified': datetime.utcnow().isoformat(),
+                'last_modified': datetime.now(UTC).isoformat(),
                 'user_id': current_user.id
             },
             'main.py': {
                 'content': '#!/usr/bin/env python3\n"""\nMain application file\nCreated in Nexa IDE\n"""\n\nprint("Hello from Nexa IDE!")\n\nclass Project:\n    def __init__(self, name):\n        self.name = name\n    \n    def run(self):\n        print(f"Running {self.name}...")\n        return "Success!"\n\nif __name__ == "__main__":\n    project = Project("Nexa IDE Demo")\n    result = project.run()\n    print(f"Result: {result}")',
-                'last_modified': datetime.utcnow().isoformat(),
+                'last_modified': datetime.now(UTC).isoformat(),
                 'user_id': current_user.id
             },
             'styles.css': {
                 'content': '/* Main stylesheet */\nbody {\n    font-family: Arial, sans-serif;\n    margin: 0;\n    padding: 20px;\n    background-color: #f5f5f5;\n}\n\n.container {\n    max-width: 1200px;\n    margin: 0 auto;\n    background: white;\n    padding: 20px;\n    border-radius: 8px;\n    box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n}',
-                'last_modified': datetime.utcnow().isoformat(),
+                'last_modified': datetime.now(UTC).isoformat(),
                 'user_id': current_user.id
             }
         }

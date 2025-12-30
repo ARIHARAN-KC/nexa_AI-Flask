@@ -19,7 +19,7 @@ class DecisionTaker:
     REQUIRED_KEYS = {"function", "args", "reply"}
 
     def __init__(self, base_model: str, api_key: str) -> None:
-        self.llm = LLM(base_model, api_key)
+        self.llm = LLM(base_model, api_key, agent_name="decision_taker")
         self.max_retries = 5
         self.prompt_template = self._load_prompt()
 

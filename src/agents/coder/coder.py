@@ -18,7 +18,7 @@ class Coder:
     """
 
     def __init__(self, base_model: str, api_key: str):
-        self.llm = LLM(base_model, api_key)
+        self.llm = LLM(base_model, api_key, agent_name="coder")
 
         self.code_block_pattern = re.compile(
             r"```(?:\w+)?\n(.*?)```",

@@ -20,7 +20,7 @@ class BugFixer:
     REQUIRED_KEYS = {"analysis", "solution", "fixed_code"}
 
     def __init__(self, base_model: str, api_key: str):
-        self.llm = LLM(base_model, api_key)
+        self.llm = LLM(base_model, api_key, agent_name="bug_fixer")
         self.max_retries = 3
 
         self.code_block_pattern = re.compile(

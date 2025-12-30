@@ -8,7 +8,7 @@ researcher_prompt = open("src/agents/researcher/prompt.jinja2").read().strip()
 
 class Researcher:
     def __init__(self, base_model, api_key):
-        self.llm = LLM(base_model, api_key)
+        self.llm = LLM(base_model, api_key, agent_name="researcher")
         self.max_retries = 3
 
     def render(self, step_by_step_plan, contextual_keywords):
