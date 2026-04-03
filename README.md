@@ -137,7 +137,8 @@ Based on actual codebase composition:
 - **HTML**  
 - **Python Flask**  
 - **Jinja**   
-- **JavaScript**   
+- **JavaScript**
+- **AWS S3**
 
 **Framework**: Lightweight Python web framework (e.g., Flask)  
 **Styling**: Tailwind CSS  
